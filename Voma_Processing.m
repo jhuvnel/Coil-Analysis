@@ -240,14 +240,22 @@ handles.PredictFilt.EyeV = [];
 handles.PredictFilt.VFO = [];
 handles.PredictFilt.PFO = [];
 handles.PredictFilt.PFFL = [];
-if isfile(['\\10.16.39.7\labdata\Morris, Brian\MATLAB\VNEL\Coil Analysis\PredictFilt.mat'])
-    tempP = load('\\10.16.39.7\labdata\Morris, Brian\MATLAB\VNEL\Coil Analysis\PredictFilt.mat');
+
+handles.originalGUIPath = matlab.desktop.editor.getActiveFilename;
+handles.originalGUIPath = strrep(handles.originalGUIPath,'Voma_Processing.m','');
+
+if isfile([handles.originalGUIPath,'PredictFilt.mat'])
+    tempP = load([handles.originalGUIPath,'PredictFilt.mat']);
     handles.PredictFilt = tempP.PredictFilt;
 end
-if isfile(['\\10.16.39.7\labdata\Morris, Brian\MATLAB\VNEL\Coil Analysis\PredictCycles.mat'])
-    load('\\10.16.39.7\labdata\Morris, Brian\MATLAB\VNEL\Coil Analysis\PredictCycles.mat');
+if isfile([handles.originalGUIPath,'PredictCycles.mat'])
+    load([handles.originalGUIPath,'PredictCycles.mat']);
     handles.PredictCycles = PredictCycles;
 end
+
+    handles.linkaxisFlag = true;
+    linkaxes([handles.axes4,handles.axes1,handles.angPos])
+    
 guidata(hObject, handles);
 
 % UIWAIT makes Voma_Processing wait for user response (see UIRESUME)
@@ -906,7 +914,7 @@ else
                 toU = 19;
             end
         else
-            toU = uVFO(min([mlP mrp]));
+            toU = uVFO(min([mlP mrP]));
         end
         
     end
@@ -2667,7 +2675,7 @@ elseif isempty(PredictFilt.VFO)
     keyboard
     ph = 1;
 else
-    save('\\10.16.39.7\labdata\Morris, Brian\MATLAB\VNEL\Coil Analysis\PredictFilt.mat','PredictFilt')
+    save([handles.originalGUIPath,'PredictFilt.mat'],'PredictFilt')
 end
 
 PredictCycles = handles.PredictCycles;
@@ -2675,7 +2683,7 @@ if isempty(PredictCycles)
     keyboard
     ph = 1;
 else
-    save('\\10.16.39.7\labdata\Morris, Brian\MATLAB\VNEL\Coil Analysis\PredictCycles.mat','PredictCycles')
+    save([handles.originalGUIPath,'PredictCycles.mat'],'PredictCycles')
 end
 
 cycNum = 1;
