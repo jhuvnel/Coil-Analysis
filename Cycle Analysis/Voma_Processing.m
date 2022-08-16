@@ -22,7 +22,7 @@ function varargout = Voma_Processing(varargin)
 
 % Edit the above text to modify the response to help Voma_Processing
 
-% Last Modified by GUIDE v2.5 27-Jun-2022 15:04:01
+% Last Modified by GUIDE v2.5 16-Aug-2022 13:22:28
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -240,16 +240,38 @@ handles.PredictFilt.EyeV = [];
 handles.PredictFilt.VFO = [];
 handles.PredictFilt.PFO = [];
 handles.PredictFilt.PFFL = [];
+handles.PredictFilt.ToUse = [];
+
+handles.PF.Noise = [];
+handles.PF.EyeV = [];
+handles.PF.VFO = [];
+handles.PF.PFO = [];
+handles.PF.PFFL = [];
+handles.PF.ToUse = [];
+
+handles.PredictCycles.avgMag = [];
+handles.PredictCycles.MaxMag = [];
+handles.PredictCycles.MinMag = [];
+handles.PredictCycles.avgMis = [];
+handles.PredictCycles.MaxMis = [];
+handles.PredictCycles.MinMis = [];
+
+handles.PC.avgMag = [];
+handles.PC.MaxMag = [];
+handles.PC.MinMag = [];
+handles.PC.avgMis = [];
+handles.PC.MaxMis = [];
+handles.PC.MinMis = [];
 
 handles.originalGUIPath = matlab.desktop.editor.getActiveFilename;
 handles.originalGUIPath = strrep(handles.originalGUIPath,'Voma_Processing.m','');
 
-if isfile([handles.originalGUIPath,'PredictFilt.mat'])
-    tempP = load([handles.originalGUIPath,'PredictFilt.mat']);
+if isfile(['\\10.16.39.7\labdata\Morris, Brian\Coil Analysis Prediction Files\PredictFilt.mat'])
+    tempP = load(['\\10.16.39.7\labdata\Morris, Brian\Coil Analysis Prediction Files\PredictFilt.mat']);
     handles.PredictFilt = tempP.PredictFilt;
 end
-if isfile([handles.originalGUIPath,'PredictCycles.mat'])
-    load([handles.originalGUIPath,'PredictCycles.mat']);
+if isfile(['\\10.16.39.7\labdata\Morris, Brian\Coil Analysis Prediction Files\PredictCycles.mat'])
+    load(['\\10.16.39.7\labdata\Morris, Brian\Coil Analysis Prediction Files\PredictCycles.mat']);
     handles.PredictCycles = PredictCycles;
 end
 
@@ -680,7 +702,7 @@ else
     uVFO = unique(handles.PredictFilt.VFO)';
     bnds = [];
     for ii = uVFO
-        ids = handles.PredictFilt.VFO == ii;
+        ids = (handles.PredictFilt.VFO == ii) & (handles.PredictFilt.ToUse);
         minv = min([handles.PredictFilt.EyeV(ids)' ]);
         maxv = max([handles.PredictFilt.EyeV(ids)']);
         bnds = [bnds [maxv; minv]];
@@ -2554,136 +2576,143 @@ if handles.LEye.Value && handles.REye.Value
     tt6 = handles.RootData(handles.segNum).VOMA_data.Data_RE_Vel_Z(1:2200);
     m = movmax([tt tt2 tt3 tt4 tt5 tt6],5);
     m2 = movmax(-[tt tt2 tt3 tt4 tt5 tt6],5);
-    handles.PredictFilt.Noise = [handles.PredictFilt.Noise; repmat(mean(mean(m)-mean(-m2)),4,1)];
 
-    handles.PredictFilt.EyeV = [handles.PredictFilt.EyeV; str2num(handles.avgMag_Nystag.String)];
-    handles.PredictFilt.EyeV = [handles.PredictFilt.EyeV; str2num(handles.avgMagR_Nystag.String)];
-    handles.PredictFilt.EyeV = [handles.PredictFilt.EyeV; str2num(handles.avgMag.String)];
-    handles.PredictFilt.EyeV = [handles.PredictFilt.EyeV; str2num(handles.avgMagR.String)];
+    handles.PF.Noise = [handles.PF.Noise; repmat(mean(mean(m)-mean(-m2)),4,1)];
+
+    handles.PF.EyeV = [handles.PF.EyeV; str2num(handles.avgMag_Nystag.String)];
+    handles.PF.EyeV = [handles.PF.EyeV; str2num(handles.avgMagR_Nystag.String)];
+    handles.PF.EyeV = [handles.PF.EyeV; str2num(handles.avgMag.String)];
+    handles.PF.EyeV = [handles.PF.EyeV; str2num(handles.avgMagR.String)];
     
-    handles.PredictFilt.VFO = [handles.PredictFilt.VFO; repmat(str2num(handles.filterorder.String),4,1)];
-    handles.PredictFilt.PFO = [handles.PredictFilt.PFO; repmat(str2num(handles.posFiltOrder.String),4,1)];
-    handles.PredictFilt.PFFL = [handles.PredictFilt.PFFL; repmat(str2num(handles.posFiltLeng.String),4,1)];
+    handles.PF.VFO = [handles.PF.VFO; repmat(str2num(handles.filterorder.String),4,1)];
+    handles.PF.PFO = [handles.PF.PFO; repmat(str2num(handles.posFiltOrder.String),4,1)];
+    handles.PF.PFFL = [handles.PF.PFFL; repmat(str2num(handles.posFiltLeng.String),4,1)];
+    handles.PF.ToUse = [handles.PF.ToUse; repmat(0,4,1)];
 
-    vM = [[handles.PredictCycles.avgMag] mean(handles.segment.maxMagR(usedInd)) mean(handles.segment.maxMagR_NystagCorr(usedIndN)) mean(handles.segment.maxMagL(usedInd)) mean(handles.segment.maxMagL_NystagCorr(usedIndN))];
-    [vM,I] = sort(vM);
-    vM1 = [[handles.PredictCycles.MaxMag] max(handles.segment.maxMagR(usedInd)) max(handles.segment.maxMagR_NystagCorr(usedIndN)) max(handles.segment.maxMagL(usedInd)) max(handles.segment.maxMagL_NystagCorr(usedIndN))];
-    vM2 = [[handles.PredictCycles.MinMag] min(handles.segment.maxMagR(usedInd)) min(handles.segment.maxMagR_NystagCorr(usedIndN)) min(handles.segment.maxMagL(usedInd)) min(handles.segment.maxMagL_NystagCorr(usedIndN))];
-    vM1 = vM1(I);
-    vM2 = vM2(I);
+    handles.PC.avgMag = [handles.PC.avgMag; mean(handles.segment.maxMagR(usedInd)); mean(handles.segment.maxMagR_NystagCorr(usedIndN)); mean(handles.segment.maxMagL(usedInd)); mean(handles.segment.maxMagL_NystagCorr(usedIndN))];
+    handles.PC.MaxMag = [handles.PC.MaxMag; max(handles.segment.maxMagR(usedInd)); max(handles.segment.maxMagR_NystagCorr(usedIndN)); max(handles.segment.maxMagL(usedInd)); max(handles.segment.maxMagL_NystagCorr(usedIndN))];
+    handles.PC.MinMag = [handles.PC.MinMag; min(handles.segment.maxMagR(usedInd)); min(handles.segment.maxMagR_NystagCorr(usedIndN)); min(handles.segment.maxMagL(usedInd)); min(handles.segment.maxMagL_NystagCorr(usedIndN))];
 
-    mM = [[handles.PredictCycles.avgMis] mean(handles.segment.MisalignR(usedInd)) mean(handles.segment.MisalignR_NystagCorr(usedIndN)) mean(handles.segment.MisalignL(usedInd)) mean(handles.segment.MisalignL_NystagCorr(usedIndN))];
-    [mM,I] = sort(mM);
-    mM1 = [[handles.PredictCycles.MaxMis] max(handles.segment.MisalignR(usedInd)) max(handles.segment.MisalignR_NystagCorr(usedIndN)) max(handles.segment.MisalignL(usedInd)) max(handles.segment.MisalignL_NystagCorr(usedIndN))];
-    mM2 = [[handles.PredictCycles.MinMis] min(handles.segment.MisalignR(usedInd)) min(handles.segment.MisalignR_NystagCorr(usedIndN)) min(handles.segment.MisalignL(usedInd)) min(handles.segment.MisalignL_NystagCorr(usedIndN))];
-    mM1 = mM1(I);
-    mM2 = mM2(I);
+    handles.PC.avgMis = [handles.PC.avgMis; mean(handles.segment.MisalignR(usedInd)); mean(handles.segment.MisalignR_NystagCorr(usedIndN)); mean(handles.segment.MisalignL(usedInd)); mean(handles.segment.MisalignL_NystagCorr(usedIndN))];
+    handles.PC.MaxMis = [handles.PC.MaxMis; max(handles.segment.MisalignR(usedInd)); max(handles.segment.MisalignR_NystagCorr(usedIndN)); max(handles.segment.MisalignL(usedInd)); max(handles.segment.MisalignL_NystagCorr(usedIndN))];
+    handles.PC.MinMis = [handles.PC.MinMis; min(handles.segment.MisalignR(usedInd)); min(handles.segment.MisalignR_NystagCorr(usedIndN)); min(handles.segment.MisalignL(usedInd)); min(handles.segment.MisalignL_NystagCorr(usedIndN))];
 
-    for iii = 1:length(vM)
-        handles.PredictCycles(iii).avgMag = vM(iii);
-        handles.PredictCycles(iii).MaxMag = vM1(iii);
-        handles.PredictCycles(iii).MinMag = vM2(iii);
-
-        handles.PredictCycles(iii).avgMis = mM(iii);
-        handles.PredictCycles(iii).MaxMis = mM1(iii);
-        handles.PredictCycles(iii).MinMis = mM2(iii);
-    end
+%     vM = [[handles.PredictCycles.avgMag] mean(handles.segment.maxMagR(usedInd)) mean(handles.segment.maxMagR_NystagCorr(usedIndN)) mean(handles.segment.maxMagL(usedInd)) mean(handles.segment.maxMagL_NystagCorr(usedIndN))];
+%     [vM,I] = sort(vM);
+%     vM1 = [[handles.PredictCycles.MaxMag] max(handles.segment.maxMagR(usedInd)) max(handles.segment.maxMagR_NystagCorr(usedIndN)) max(handles.segment.maxMagL(usedInd)) max(handles.segment.maxMagL_NystagCorr(usedIndN))];
+%     vM2 = [[handles.PredictCycles.MinMag] min(handles.segment.maxMagR(usedInd)) min(handles.segment.maxMagR_NystagCorr(usedIndN)) min(handles.segment.maxMagL(usedInd)) min(handles.segment.maxMagL_NystagCorr(usedIndN))];
+%     vM1 = vM1(I);
+%     vM2 = vM2(I);
+% 
+%     mM = [[handles.PredictCycles.avgMis] mean(handles.segment.MisalignR(usedInd)) mean(handles.segment.MisalignR_NystagCorr(usedIndN)) mean(handles.segment.MisalignL(usedInd)) mean(handles.segment.MisalignL_NystagCorr(usedIndN))];
+%     [mM,I] = sort(mM);
+%     mM1 = [[handles.PredictCycles.MaxMis] max(handles.segment.MisalignR(usedInd)) max(handles.segment.MisalignR_NystagCorr(usedIndN)) max(handles.segment.MisalignL(usedInd)) max(handles.segment.MisalignL_NystagCorr(usedIndN))];
+%     mM2 = [[handles.PredictCycles.MinMis] min(handles.segment.MisalignR(usedInd)) min(handles.segment.MisalignR_NystagCorr(usedIndN)) min(handles.segment.MisalignL(usedInd)) min(handles.segment.MisalignL_NystagCorr(usedIndN))];
+%     mM1 = mM1(I);
+%     mM2 = mM2(I);
+% 
+%     for iii = 1:length(vM)
+%         handles.PredictCycles(iii).avgMag = vM(iii);
+%         handles.PredictCycles(iii).MaxMag = vM1(iii);
+%         handles.PredictCycles(iii).MinMag = vM2(iii);
+% 
+%         handles.PredictCycles(iii).avgMis = mM(iii);
+%         handles.PredictCycles(iii).MaxMis = mM1(iii);
+%         handles.PredictCycles(iii).MinMis = mM2(iii);
+%     end
 elseif handles.LEye.Value
     tt = handles.RootData(handles.segNum).VOMA_data.Data_LE_Vel_LARP(1:2200);
     tt2 = handles.RootData(handles.segNum).VOMA_data.Data_LE_Vel_RALP(1:2200);
     tt3 = handles.RootData(handles.segNum).VOMA_data.Data_LE_Vel_Z(1:2200);
     m = movmax([tt tt2 tt3],5);
     m2 = movmax(-[tt tt2 tt3],5);
-    handles.PredictFilt.Noise = [handles.PredictFilt.Noise; repmat(mean(mean(m)-mean(-m2)),2,1)];
-    handles.PredictFilt.EyeV = [handles.PredictFilt.EyeV; str2num(handles.avgMag_Nystag.String)];
-    handles.PredictFilt.EyeV = [handles.PredictFilt.EyeV; str2num(handles.avgMag.String)];
+    handles.PF.Noise = [handles.PF.Noise; repmat(mean(mean(m)-mean(-m2)),2,1)];
+    handles.PF.EyeV = [handles.PF.EyeV; str2num(handles.avgMag_Nystag.String)];
+    handles.PF.EyeV = [handles.PF.EyeV; str2num(handles.avgMag.String)];
 
-    handles.PredictFilt.VFO = [handles.PredictFilt.VFO; repmat(str2num(handles.filterorder.String),2,1)];
-    handles.PredictFilt.PFO = [handles.PredictFilt.PFO; repmat(str2num(handles.posFiltOrder.String),2,1)];
-    handles.PredictFilt.PFFL = [handles.PredictFilt.PFFL; repmat(str2num(handles.posFiltLeng.String),2,1)];
+    handles.PF.VFO = [handles.PF.VFO; repmat(str2num(handles.filterorder.String),2,1)];
+    handles.PF.PFO = [handles.PF.PFO; repmat(str2num(handles.posFiltOrder.String),2,1)];
+    handles.PF.PFFL = [handles.PF.PFFL; repmat(str2num(handles.posFiltLeng.String),2,1)];
+    handles.PF.ToUse = [handles.PF.ToUse; repmat(0,2,1)];
     
-    vM = [[handles.PredictCycles.avgMag] mean(handles.segment.maxMagL(usedInd)) mean(handles.segment.maxMagL_NystagCorr(usedIndN))];
-    [vM,I] = sort(vM);
-    vM1 = [[handles.PredictCycles.MaxMag] max(handles.segment.maxMagL(usedInd)) max(handles.segment.maxMagL_NystagCorr(usedIndN))];
-    vM2 = [[handles.PredictCycles.MinMag] min(handles.segment.maxMagL(usedInd)) min(handles.segment.maxMagL_NystagCorr(usedIndN))];
-    vM1 = vM1(I);
-    vM2 = vM2(I);
+    handles.PC.avgMag = [handles.PC.avgMag; mean(handles.segment.maxMagL(usedInd)); mean(handles.segment.maxMagL_NystagCorr(usedIndN))];
+    handles.PC.MaxMag = [handles.PC.MaxMag; max(handles.segment.maxMagL(usedInd)); max(handles.segment.maxMagL_NystagCorr(usedIndN))];
+    handles.PC.MinMag = [handles.PC.MinMag; min(handles.segment.maxMagL(usedInd)); min(handles.segment.maxMagL_NystagCorr(usedIndN))];
 
-    mM = [[handles.PredictCycles.avgMis] mean(handles.segment.MisalignL(usedInd)) mean(handles.segment.MisalignL_NystagCorr(usedIndN))];
-    [mM,I] = sort(mM);
-    mM1 = [[handles.PredictCycles.MaxMis] max(handles.segment.MisalignL(usedInd)) max(handles.segment.MisalignL_NystagCorr(usedIndN))];
-    mM2 = [[handles.PredictCycles.MinMis] min(handles.segment.MisalignL(usedInd)) min(handles.segment.MisalignL_NystagCorr(usedIndN))];
-    mM1 = mM1(I);
-    mM2 = mM2(I);
+    handles.PC.avgMis = [handles.PC.avgMis; mean(handles.segment.MisalignL(usedInd)); mean(handles.segment.MisalignL_NystagCorr(usedIndN))];
+    handles.PC.MaxMis = [handles.PC.MaxMis; max(handles.segment.MisalignL(usedInd)); max(handles.segment.MisalignL_NystagCorr(usedIndN))];
+    handles.PC.MinMis = [handles.PC.MinMis; min(handles.segment.MisalignL(usedInd)); min(handles.segment.MisalignL_NystagCorr(usedIndN))];
 
-    for iii = 1:length(vM)
-        handles.PredictCycles(iii).avgMag = vM(iii);
-        handles.PredictCycles(iii).MaxMag = vM1(iii);
-        handles.PredictCycles(iii).MinMag = vM2(iii);
-
-        handles.PredictCycles(iii).avgMis = mM(iii);
-        handles.PredictCycles(iii).MaxMis = mM1(iii);
-        handles.PredictCycles(iii).MinMis = mM2(iii);
-    end
+%     vM = [[handles.PredictCycles.avgMag] mean(handles.segment.maxMagL(usedInd)) mean(handles.segment.maxMagL_NystagCorr(usedIndN))];
+%     [vM,I] = sort(vM);
+%     vM1 = [[handles.PredictCycles.MaxMag] max(handles.segment.maxMagL(usedInd)) max(handles.segment.maxMagL_NystagCorr(usedIndN))];
+%     vM2 = [[handles.PredictCycles.MinMag] min(handles.segment.maxMagL(usedInd)) min(handles.segment.maxMagL_NystagCorr(usedIndN))];
+%     vM1 = vM1(I);
+%     vM2 = vM2(I);
+% 
+%     mM = [[handles.PredictCycles.avgMis] mean(handles.segment.MisalignL(usedInd)) mean(handles.segment.MisalignL_NystagCorr(usedIndN))];
+%     [mM,I] = sort(mM);
+%     mM1 = [[handles.PredictCycles.MaxMis] max(handles.segment.MisalignL(usedInd)) max(handles.segment.MisalignL_NystagCorr(usedIndN))];
+%     mM2 = [[handles.PredictCycles.MinMis] min(handles.segment.MisalignL(usedInd)) min(handles.segment.MisalignL_NystagCorr(usedIndN))];
+%     mM1 = mM1(I);
+%     mM2 = mM2(I);
+% 
+%     for iii = 1:length(vM)
+%         handles.PredictCycles(iii).avgMag = vM(iii);
+%         handles.PredictCycles(iii).MaxMag = vM1(iii);
+%         handles.PredictCycles(iii).MinMag = vM2(iii);
+% 
+%         handles.PredictCycles(iii).avgMis = mM(iii);
+%         handles.PredictCycles(iii).MaxMis = mM1(iii);
+%         handles.PredictCycles(iii).MinMis = mM2(iii);
+%     end
 else
     tt4 = handles.RootData(handles.segNum).VOMA_data.Data_RE_Vel_LARP(1:2200);
     tt5 = handles.RootData(handles.segNum).VOMA_data.Data_RE_Vel_RALP(1:2200);
     tt6 = handles.RootData(handles.segNum).VOMA_data.Data_RE_Vel_Z(1:2200);
     m = movmax([tt4 tt5 tt6],5);
     m2 = movmax(-[tt4 tt5 tt6],5);
-    handles.PredictFilt.Noise = [handles.PredictFilt.Noise; repmat(mean(mean(m)-mean(-m2)),2,1)];
-    handles.PredictFilt.EyeV = [handles.PredictFilt.EyeV; str2num(handles.avgMagR_Nystag.String)];
-    handles.PredictFilt.EyeV = [handles.PredictFilt.EyeV; str2num(handles.avgMagR.String)];
+    handles.PF.Noise = [handles.PF.Noise; repmat(mean(mean(m)-mean(-m2)),2,1)];
+    handles.PF.EyeV = [handles.PF.EyeV; str2num(handles.avgMagR_Nystag.String)];
+    handles.PF.EyeV = [handles.PF.EyeV; str2num(handles.avgMagR.String)];
 
-    handles.PredictFilt.VFO = [handles.PredictFilt.VFO; repmat(str2num(handles.filterorder.String),2,1)];
-    handles.PredictFilt.PFO = [handles.PredictFilt.PFO; repmat(str2num(handles.posFiltOrder.String),2,1)];
-    handles.PredictFilt.PFFL = [handles.PredictFilt.PFFL; repmat(str2num(handles.posFiltLeng.String),2,1)];
+    handles.PF.VFO = [handles.PF.VFO; repmat(str2num(handles.filterorder.String),2,1)];
+    handles.PF.PFO = [handles.PF.PFO; repmat(str2num(handles.posFiltOrder.String),2,1)];
+    handles.PF.PFFL = [handles.PF.PFFL; repmat(str2num(handles.posFiltLeng.String),2,1)];
+    handles.PF.ToUse = [handles.PF.ToUse; repmat(0,2,1)];
     
-    vM = [[handles.PredictCycles.avgMag] mean(handles.segment.maxMagR(usedInd)) mean(handles.segment.maxMagR_NystagCorr(usedIndN))];
-    [vM,I] = sort(vM);
-    vM1 = [[handles.PredictCycles.MaxMag] max(handles.segment.maxMagR(usedInd)) max(handles.segment.maxMagR_NystagCorr(usedIndN))];
-    vM2 = [[handles.PredictCycles.MinMag] min(handles.segment.maxMagR(usedInd)) min(handles.segment.maxMagR_NystagCorr(usedIndN))];
-    vM1 = vM1(I);
-    vM2 = vM2(I);
+    handles.PC.avgMag = [handles.PC.avgMag; mean(handles.segment.maxMagR(usedInd)); mean(handles.segment.maxMagR_NystagCorr(usedIndN))];
+    handles.PC.MaxMag = [handles.PC.MaxMag; max(handles.segment.maxMagR(usedInd)); max(handles.segment.maxMagR_NystagCorr(usedIndN))];
+    handles.PC.MinMag = [handles.PC.MinMag; min(handles.segment.maxMagR(usedInd)); min(handles.segment.maxMagR_NystagCorr(usedIndN))];
 
-    mM = [[handles.PredictCycles.avgMis] mean(handles.segment.MisalignR(usedInd)) mean(handles.segment.MisalignR_NystagCorr(usedIndN))];
-    [mM,I] = sort(mM);
-    mM1 = [[handles.PredictCycles.MaxMis] max(handles.segment.MisalignR(usedInd)) max(handles.segment.MisalignR_NystagCorr(usedIndN))];
-    mM2 = [[handles.PredictCycles.MinMis] min(handles.segment.MisalignR(usedInd)) min(handles.segment.MisalignR_NystagCorr(usedIndN))];
-    mM1 = mM1(I);
-    mM2 = mM2(I);
+    handles.PC.avgMis = [handles.PC.avgMis; mean(handles.segment.MisalignR(usedInd)); mean(handles.segment.MisalignR_NystagCorr(usedIndN))];
+    handles.PC.MaxMis = [handles.PC.MaxMis; max(handles.segment.MisalignR(usedInd)); max(handles.segment.MisalignR_NystagCorr(usedIndN))];
+    handles.PC.MinMis = [handles.PC.MinMis; min(handles.segment.MisalignR(usedInd)); min(handles.segment.MisalignR_NystagCorr(usedIndN))];
 
-    for iii = 1:length(vM)
-        handles.PredictCycles(iii).avgMag = vM(iii);
-        handles.PredictCycles(iii).MaxMag = vM1(iii);
-        handles.PredictCycles(iii).MinMag = vM2(iii);
-
-        handles.PredictCycles(iii).avgMis = mM(iii);
-        handles.PredictCycles(iii).MaxMis = mM1(iii);
-        handles.PredictCycles(iii).MinMis = mM2(iii);
-    end
+%     vM = [[handles.PredictCycles.avgMag] mean(handles.segment.maxMagR(usedInd)) mean(handles.segment.maxMagR_NystagCorr(usedIndN))];
+%     [vM,I] = sort(vM);
+%     vM1 = [[handles.PredictCycles.MaxMag] max(handles.segment.maxMagR(usedInd)) max(handles.segment.maxMagR_NystagCorr(usedIndN))];
+%     vM2 = [[handles.PredictCycles.MinMag] min(handles.segment.maxMagR(usedInd)) min(handles.segment.maxMagR_NystagCorr(usedIndN))];
+%     vM1 = vM1(I);
+%     vM2 = vM2(I);
+% 
+%     mM = [[handles.PredictCycles.avgMis] mean(handles.segment.MisalignR(usedInd)) mean(handles.segment.MisalignR_NystagCorr(usedIndN))];
+%     [mM,I] = sort(mM);
+%     mM1 = [[handles.PredictCycles.MaxMis] max(handles.segment.MisalignR(usedInd)) max(handles.segment.MisalignR_NystagCorr(usedIndN))];
+%     mM2 = [[handles.PredictCycles.MinMis] min(handles.segment.MisalignR(usedInd)) min(handles.segment.MisalignR_NystagCorr(usedIndN))];
+%     mM1 = mM1(I);
+%     mM2 = mM2(I);
+% 
+%     for iii = 1:length(vM)
+%         handles.PredictCycles(iii).avgMag = vM(iii);
+%         handles.PredictCycles(iii).MaxMag = vM1(iii);
+%         handles.PredictCycles(iii).MinMag = vM2(iii);
+% 
+%         handles.PredictCycles(iii).avgMis = mM(iii);
+%         handles.PredictCycles(iii).MaxMis = mM1(iii);
+%         handles.PredictCycles(iii).MinMis = mM2(iii);
+%     end
     
-end
-
-
-
-PredictFilt = handles.PredictFilt;
-if isempty(PredictFilt)
-    keyboard
-    ph = 1;
-elseif isempty(PredictFilt.VFO)
-    keyboard
-    ph = 1;
-else
-    save([handles.originalGUIPath,'PredictFilt.mat'],'PredictFilt')
-end
-
-PredictCycles = handles.PredictCycles;
-if isempty(PredictCycles)
-    keyboard
-    ph = 1;
-else
-    save([handles.originalGUIPath,'PredictCycles.mat'],'PredictCycles')
 end
 
 cycNum = 1;
@@ -2862,6 +2891,86 @@ else
     cla(handles.axes4)
     cla(handles.cycavg)
     cla(handles.cycavg_Nystag)
+
+    if isfile(['\\10.16.39.7\labdata\Morris, Brian\Coil Analysis Prediction Files\PredictFilt.mat'])
+        load(['\\10.16.39.7\labdata\Morris, Brian\Coil Analysis Prediction Files\PredictFilt.mat']);
+    end
+    if isfile(['\\10.16.39.7\labdata\Morris, Brian\Coil Analysis Prediction Files\PredictCycles.mat'])
+        load(['\\10.16.39.7\labdata\Morris, Brian\Coil Analysis Prediction Files\PredictCycles.mat']);
+    end
+
+    if length(PredictFilt.EyeV) ~= length(handles.PredictFilt.EyeV)
+        newIDS = find(~ismember(PredictFilt.EyeV,handles.PredictFilt.EyeV));
+        handles.PF.EyeV = [handles.PF.EyeV; PredictFilt.EyeV(newIDS)];
+        handles.PF.Noise = [handles.PF.Noise; PredictFilt.Noise(newIDS)];
+        handles.PF.PFFL = [handles.PF.PFFL; PredictFilt.PFFL(newIDS)];
+        handles.PF.PFO = [handles.PF.PFO; PredictFilt.PFO(newIDS)];
+        handles.PF.ToUse = [handles.PF.ToUse; PredictFilt.ToUse(newIDS)];
+    end
+
+    if length(PredictCycles.avgMag) ~= length(handles.PredictCycles.avgMag)
+        newIDS = find(~ismember(PredictCycles.avgMag,handles.PredictCycles.avgMag));
+        handles.PC.avgMag = [handles.PC.avgMag; PredictCycles.avgMag(newIDS)];
+        handles.PC.avgMis = [handles.PC.avgMis; PredictCycles.avgMis(newIDS)];
+        handles.PC.MaxMag = [handles.PC.MaxMag; PredictCycles.MaxMag(newIDS)];
+        handles.PC.MinMag = [handles.PC.MinMag; PredictCycles.MinMag(newIDS)];
+        handles.PC.MaxMis = [handles.PC.MaxMis; PredictCycles.MaxMis(newIDS)];
+        handles.PC.MinMis = [handles.PC.MinMis; PredictCycles.MinMis(newIDS)];
+    end
+
+    handles.PredictFilt.EyeV = [handles.PredictFilt.EyeV; handles.PF.EyeV];
+    handles.PredictFilt.Noise = [handles.PredictFilt.Noise; handles.PF.Noise];
+    handles.PredictFilt.PFFL = [handles.PredictFilt.PFFL; handles.PF.PFFL];
+    handles.PredictFilt.PFO = [handles.PredictFilt.PFO; handles.PF.PFO];
+    handles.PredictFilt.ToUse = [handles.PredictFilt.ToUse; handles.PF.ToUse];
+
+    PredictFilt = handles.PredictFilt;
+
+    handles.PredictCycles.avgMag = [handles.PredictCycles.avgMag; handles.PC.avgMag];
+    handles.PredictCycles.avgMis = [handles.PredictCycles.avgMis; handles.PC.avgMis];
+    handles.PredictCycles.MaxMag = [handles.PredictCycles.MaxMag; handles.PC.MaxMag];
+    handles.PredictCycles.MinMag = [handles.PredictCycles.MinMag; handles.PC.MinMag];
+    handles.PredictCycles.MaxMis = [handles.PredictCycles.MaxMis; handles.PC.MaxMis];
+    handles.PredictCycles.MinMis = [handles.PredictCycles.MinMis; handles.PC.MinMis];
+
+    PredictCycles = handles.PredictCycles;
+    [PredictCycles.avgMag,I] = sort(PredictCycles.avgMag);
+    PredictCycles.MaxMag = PredictCycles.MaxMag(I);
+    PredictCycles.MinMag = PredictCycles.MinMag(I);
+
+    [PredictCycles.avgMis,I] = sort(PredictCycles.avgMis);
+    PredictCycles.MaxMis = PredictCycles.MaxMis(I);
+    PredictCycles.MinMis = PredictCycles.MinMis(I);
+
+    if isempty(PredictFilt)
+        keyboard
+        ph = 1;
+    elseif isempty(PredictFilt.VFO)
+        keyboard
+        ph = 1;
+    else
+        save(['\\10.16.39.7\labdata\Morris, Brian\Coil Analysis Prediction Files\PredictFilt.mat'],'PredictFilt')
+    end
+
+    if isempty(PredictCycles)
+        keyboard
+        ph = 1;
+    else
+        save(['\\10.16.39.7\labdata\Morris, Brian\Coil Analysis Prediction Files\PredictCycles.mat'],'PredictCycles')
+    end
+    handles.PF.EyeV = [];
+    handles.PF.Noise = [];
+    handles.PF.PFFL = [];
+    handles.PF.PFO = [];
+    handles.PF.ToUse = [];
+
+    handles.PC.avgMag = [];
+    handles.PC.avgMis = [];
+    handles.PC.MaxMag = [];
+    handles.PC.MinMag = [];
+    handles.PC.MaxMis = [];
+    handles.PC.MinMis = [];
+
 end
 
 guidata(hObject, handles);
@@ -3108,7 +3217,6 @@ guidata(hObject, handles);
 %        contents{get(hObject,'Value')} returns selected item from ecombsList
 end
 
-
 % --- Executes on button press in updateCycAvgNames.
 function updateCycAvgNames_Callback(hObject, eventdata, handles)
 % hObject    handle to updateCycAvgNames (see GCBO)
@@ -3140,3 +3248,82 @@ handles = CheckExistingFiles(handles);
 guidata(hObject, handles);
 end
 
+% --- Executes when user attempts to close figure1.
+function figure1_CloseRequestFcn(hObject, eventdata, handles)
+% hObject    handle to figure1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+answer = questdlg('Would you like to save predictive data?', 'Save Predictive Data','Yes','No','Yes');
+switch answer
+    case 'Yes'
+        if isfile(['\\10.16.39.7\labdata\Morris, Brian\Coil Analysis Prediction Files\PredictFilt.mat'])
+            load(['\\10.16.39.7\labdata\Morris, Brian\Coil Analysis Prediction Files\PredictFilt.mat']);
+        end
+        if isfile(['\\10.16.39.7\labdata\Morris, Brian\Coil Analysis Prediction Files\PredictCycles.mat'])
+            load(['\\10.16.39.7\labdata\Morris, Brian\Coil Analysis Prediction Files\PredictCycles.mat']);
+        end
+
+        if length(PredictFilt.EyeV) ~= length(handles.PredictFilt.EyeV)
+            newIDS = find(~ismember(PredictFilt.EyeV,handles.PredictFilt.EyeV));
+            handles.PF.EyeV = [handles.PF.EyeV; PredictFilt.EyeV(newIDS)];
+            handles.PF.Noise = [handles.PF.Noise; PredictFilt.Noise(newIDS)];
+            handles.PF.PFFL = [handles.PF.PFFL; PredictFilt.PFFL(newIDS)];
+            handles.PF.PFO = [handles.PF.PFO; PredictFilt.PFO(newIDS)];
+            handles.PF.ToUse = [handles.PF.ToUse; PredictFilt.ToUse(newIDS)];
+        end
+
+        if length(PredictCycles.avgMag) ~= length(handles.PredictCycles.avgMag)
+            newIDS = find(~ismember(PredictCycles.avgMag,handles.PredictCycles.avgMag));
+            handles.PC.avgMag = [handles.PC.avgMag; PredictCycles.avgMag(newIDS)];
+            handles.PC.avgMis = [handles.PC.avgMis; PredictCycles.avgMis(newIDS)];
+            handles.PC.MaxMag = [handles.PC.MaxMag; PredictCycles.MaxMag(newIDS)];
+            handles.PC.MinMag = [handles.PC.MinMag; PredictCycles.MinMag(newIDS)];
+            handles.PC.MaxMis = [handles.PC.MaxMis; PredictCycles.MaxMis(newIDS)];
+            handles.PC.MinMis = [handles.PC.MinMis; PredictCycles.MinMis(newIDS)];
+        end
+
+        handles.PredictFilt.EyeV = [handles.PredictFilt.EyeV; handles.PF.EyeV];
+        handles.PredictFilt.Noise = [handles.PredictFilt.Noise; handles.PF.Noise];
+        handles.PredictFilt.PFFL = [handles.PredictFilt.PFFL; handles.PF.PFFL];
+        handles.PredictFilt.PFO = [handles.PredictFilt.PFO; handles.PF.PFO];
+        handles.PredictFilt.ToUse = [handles.PredictFilt.ToUse; handles.PF.ToUse];
+
+        PredictFilt = handles.PredictFilt;
+
+        handles.PredictCycles.avgMag = [handles.PredictCycles.avgMag; handles.PC.avgMag];
+        handles.PredictCycles.avgMis = [handles.PredictCycles.avgMis; handles.PC.avgMis];
+        handles.PredictCycles.MaxMag = [handles.PredictCycles.MaxMag; handles.PC.MaxMag];
+        handles.PredictCycles.MinMag = [handles.PredictCycles.MinMag; handles.PC.MinMag];
+        handles.PredictCycles.MaxMis = [handles.PredictCycles.MaxMis; handles.PC.MaxMis];
+        handles.PredictCycles.MinMis = [handles.PredictCycles.MinMis; handles.PC.MinMis];
+
+        PredictCycles = handles.PredictCycles;
+        [PredictCycles.avgMag,I] = sort(PredictCycles.avgMag);
+        PredictCycles.MaxMag = PredictCycles.MaxMag(I);
+        PredictCycles.MinMag = PredictCycles.MinMag(I);
+
+        [PredictCycles.avgMis,I] = sort(PredictCycles.avgMis);
+        PredictCycles.MaxMis = PredictCycles.MaxMis(I);
+        PredictCycles.MinMis = PredictCycles.MinMis(I);
+
+        if isempty(PredictFilt)
+            keyboard
+            ph = 1;
+        elseif isempty(PredictFilt.VFO)
+            keyboard
+            ph = 1;
+        else
+            save(['\\10.16.39.7\labdata\Morris, Brian\Coil Analysis Prediction Files\PredictFilt.mat'],'PredictFilt')
+        end
+
+        if isempty(PredictCycles)
+            keyboard
+            ph = 1;
+        else
+            save(['\\10.16.39.7\labdata\Morris, Brian\Coil Analysis Prediction Files\PredictCycles.mat'],'PredictCycles')
+        end
+end
+
+% Hint: delete(hObject) closes the figure
+delete(hObject);
+end
