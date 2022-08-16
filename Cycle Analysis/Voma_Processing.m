@@ -774,6 +774,7 @@ else
         else
             toU = uVFO(min(mrP));
         end
+
     elseif all(handles.segment.maxMagR==0)
         io = isoutlier(handles.segment.maxMagL_NystagCorr,'percentiles',[35 65]);
         ml = mean(handles.segment.maxMagL_NystagCorr(~io));
@@ -2903,6 +2904,7 @@ else
         newIDS = find(~ismember(PredictFilt.EyeV,handles.PredictFilt.EyeV));
         handles.PF.EyeV = [handles.PF.EyeV; PredictFilt.EyeV(newIDS)];
         handles.PF.Noise = [handles.PF.Noise; PredictFilt.Noise(newIDS)];
+        handles.PF.VFO = [handles.PF.VFO; PredictFilt.VFO(newIDS)];
         handles.PF.PFFL = [handles.PF.PFFL; PredictFilt.PFFL(newIDS)];
         handles.PF.PFO = [handles.PF.PFO; PredictFilt.PFO(newIDS)];
         handles.PF.ToUse = [handles.PF.ToUse; PredictFilt.ToUse(newIDS)];
@@ -2920,6 +2922,7 @@ else
 
     handles.PredictFilt.EyeV = [handles.PredictFilt.EyeV; handles.PF.EyeV];
     handles.PredictFilt.Noise = [handles.PredictFilt.Noise; handles.PF.Noise];
+    handles.PredictFilt.VFO = [handles.PredictFilt.VFO; handles.PF.VFO];
     handles.PredictFilt.PFFL = [handles.PredictFilt.PFFL; handles.PF.PFFL];
     handles.PredictFilt.PFO = [handles.PredictFilt.PFO; handles.PF.PFO];
     handles.PredictFilt.ToUse = [handles.PredictFilt.ToUse; handles.PF.ToUse];
@@ -2960,6 +2963,7 @@ else
     end
     handles.PF.EyeV = [];
     handles.PF.Noise = [];
+    handles.PF.VFO = [];
     handles.PF.PFFL = [];
     handles.PF.PFO = [];
     handles.PF.ToUse = [];
@@ -3267,6 +3271,7 @@ switch answer
             newIDS = find(~ismember(PredictFilt.EyeV,handles.PredictFilt.EyeV));
             handles.PF.EyeV = [handles.PF.EyeV; PredictFilt.EyeV(newIDS)];
             handles.PF.Noise = [handles.PF.Noise; PredictFilt.Noise(newIDS)];
+            handles.PF.VFO = [handles.PF.VFO; PredictFilt.VFO(newIDS)];
             handles.PF.PFFL = [handles.PF.PFFL; PredictFilt.PFFL(newIDS)];
             handles.PF.PFO = [handles.PF.PFO; PredictFilt.PFO(newIDS)];
             handles.PF.ToUse = [handles.PF.ToUse; PredictFilt.ToUse(newIDS)];
@@ -3284,6 +3289,7 @@ switch answer
 
         handles.PredictFilt.EyeV = [handles.PredictFilt.EyeV; handles.PF.EyeV];
         handles.PredictFilt.Noise = [handles.PredictFilt.Noise; handles.PF.Noise];
+        handles.PredictFilt.VFO = [handles.PredictFilt.VFO; handles.PF.VFO];
         handles.PredictFilt.PFFL = [handles.PredictFilt.PFFL; handles.PF.PFFL];
         handles.PredictFilt.PFO = [handles.PredictFilt.PFO; handles.PF.PFO];
         handles.PredictFilt.ToUse = [handles.PredictFilt.ToUse; handles.PF.ToUse];
