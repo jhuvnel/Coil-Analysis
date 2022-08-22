@@ -2892,7 +2892,7 @@ else
     cla(handles.axes4)
     cla(handles.cycavg)
     cla(handles.cycavg_Nystag)
-
+    ff = msgbox('Saving PredictCycles and PredictFilt data!');
     if isfile(['\\10.16.39.7\labdata\Morris, Brian\Coil Analysis Prediction Files\PredictFilt.mat'])
         load(['\\10.16.39.7\labdata\Morris, Brian\Coil Analysis Prediction Files\PredictFilt.mat']);
     end
@@ -2961,6 +2961,8 @@ else
     else
         save(['\\10.16.39.7\labdata\Morris, Brian\Coil Analysis Prediction Files\PredictCycles.mat'],'PredictCycles')
     end
+    pause(0.3)
+    delete(ff);
     handles.PF.EyeV = [];
     handles.PF.Noise = [];
     handles.PF.VFO = [];
