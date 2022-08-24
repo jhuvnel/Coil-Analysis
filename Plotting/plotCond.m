@@ -53,13 +53,13 @@ if keepCycParam
     load('CycleParams.mat');
     handles.params = tempS;
     animal = handles.params(1).animal;
-    if isempty(handles.params(1).cycavgL)
+    if all(all(handles.params(1).cycavgL==0))
         Leye = 0;
     else
         Leye = 1;
     end
 
-    if isempty(handles.params(1).cycavgR)
+    if all(all(handles.params(1).cycavgR==0))
         Reye = 0;
     else
         Reye = 1;
@@ -218,7 +218,11 @@ else
                     handles.params(allF).plotM3DL_NystagCorr = (rot*(handles.params(allF).meanM3DL_NystagCorr/norm(handles.params(allF).meanM3DL_NystagCorr))')';
                 end
                 handles.params(allF).NystagCorr = 1;
-                Leye = 1;
+                if isempty(test.Results.usedmaxMagL)
+                    Leye = 0;
+                else
+                    Leye = 1;
+                end
             else
                 handles.params(allF).timeL = [];
                 handles.params(allF).cycavgL = [];
@@ -287,7 +291,12 @@ else
                     handles.params(allF).plotM3DR_NystagCorr = (rot*(handles.params(allF).meanM3DR_NystagCorr/norm(handles.params(allF).meanM3DR_NystagCorr))')';
                 end
                 handles.params(allF).NystagCorr = 1;
-                Reye = 1;
+                if isempty(test.Results.usedmaxMagR)
+                    Reye = 0;
+                else
+                    Reye = 1;
+                end
+                
             else
                 handles.params(allF).timeR = [];
                 handles.params(allF).cycavgR = [];               
