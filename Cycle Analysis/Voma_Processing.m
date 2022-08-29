@@ -22,7 +22,7 @@ function varargout = Voma_Processing(varargin)
 
 % Edit the above text to modify the response to help Voma_Processing
 
-% Last Modified by GUIDE v2.5 23-Aug-2022 13:32:39
+% Last Modified by GUIDE v2.5 29-Aug-2022 10:41:46
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -263,6 +263,11 @@ handles.PC.avgMis = [];
 handles.PC.MaxMis = [];
 handles.PC.MinMis = [];
 
+handles.PredictVFOFlg = 0;
+handles.VFOFlg = 0;
+handles.predictedVFO.BackgroundColor = [1 1 1];
+handles.filterorder.BackgroundColor = [1 1 1];
+
 handles.originalGUIPath = matlab.desktop.editor.getActiveFilename;
 handles.originalGUIPath = strrep(handles.originalGUIPath,'Voma_Processing.m','');
 
@@ -458,6 +463,10 @@ handles.redoFlag =0;
 handles.PosfiltFlag = 0;
 handles.PredictCycs = 1;
 handles.PredictCycs_Nystag = 1;
+handles.PredictVFOFlg = 0;
+handles.VFOFlg = 0;
+handles.predictedVFO.BackgroundColor = [1 1 1];
+handles.filterorder.BackgroundColor = [1 1 1];
 
 handles.segment.PosfiltFlag = 0;
 handles.segment.filtFlag = 0;
@@ -477,6 +486,8 @@ if any(ismember(handles.FinishedFiles,handles.VOMANames(handles.segNum)))
     handles.t = handles.t.Results;
     if ~isempty(handles.t.QPparams)
         handles.filterorder.String = strrep(handles.t.QPparams,'filtfilt Order ','');
+        handles.PredictVFOFlg = 0;
+        handles.VFOFlg = 1;
     end
     if isfield(handles.t,'QPposParam')
         handles.posFiltOrder.String = num2str(handles.t.QPposParam(1));
@@ -942,16 +953,22 @@ else
         
     end
     if str2num(handles.posFiltLeng.String) == 3
-        if toU ~= handles.tofilt
+        handles.predictedVFO.String = num2str(toU);
+        if ~handles.VFOFlg
             handles.tofilt = toU;
-            handles.filterorder.String = num2str(toU);
+            handles.PredictVFOFlg = 1;
+            handles.VFOFlg = 0;
             handles = filterVel(handles);
         end
     else
         handles.posFiltLeng.String = '3';
-        handles.tofilt = toU;
-        handles.filterorder.String = num2str(toU);
-        handles = filter_Plot_Pos(handles);
+        handles.predictedVFO.String = num2str(toU);
+        if ~handles.VFOFlg
+            handles.tofilt = toU;
+            handles.PredictVFOFlg = 1;
+            handles.VFOFlg = 0;
+            handles = filter_Plot_Pos(handles);
+        end
     end
 
 
@@ -1291,12 +1308,22 @@ function filterorder_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of filterorder as text
 %        str2double(get(hObject,'String')) returns contents of filterorder as a double
+handles.VFOFlg = 1;
+handles.PredictVFOFlg = 0;
 handles = filterVel(handles);
 guidata(hObject, handles);
 end
 
 function handles = filterVel(handles)
-handles.tofilt = str2num(handles.filterorder.String);
+if handles.VFOFlg
+    handles.tofilt = str2num(handles.filterorder.String);
+    handles.filterorder.BackgroundColor = 'g';
+    handles.predictedVFO.BackgroundColor = [1 1 1];
+elseif handles.PredictVFOFlg
+    handles.tofilt = str2num(handles.predictedVFO.String);
+    handles.filterorder.BackgroundColor = [1 1 1];
+    handles.predictedVFO.BackgroundColor = 'g';
+end
 if handles.tofilt<1
     handles.tofilt = 1;
     handles.filterorder.String = '1';
@@ -3334,4 +3361,43 @@ end
 
 % Hint: delete(hObject) closes the figure
 delete(hObject);
+end
+
+
+% --- If Enable == 'on', executes on mouse press in 5 pixel border.
+% --- Otherwise, executes on mouse press in 5 pixel border or over predictedVFO.
+function predictedVFO_ButtonDownFcn(hObject, eventdata, handles)
+% hObject    handle to predictedVFO (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.PredictVFOFlg = 1;
+handles.VFOFlg = 0;
+handles = filterVel(handles);
+guidata(hObject, handles);
+end
+
+
+% --- If Enable == 'on', executes on mouse press in 5 pixel border.
+% --- Otherwise, executes on mouse press in 5 pixel border or over text14.
+function text14_ButtonDownFcn(hObject, eventdata, handles)
+% hObject    handle to text14 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.PredictVFOFlg = 0;
+handles.VFOFlg = 1;
+handles = filterVel(handles);
+guidata(hObject, handles);
+end
+
+
+% --- If Enable == 'on', executes on mouse press in 5 pixel border.
+% --- Otherwise, executes on mouse press in 5 pixel border or over text36.
+function text36_ButtonDownFcn(hObject, eventdata, handles)
+% hObject    handle to text36 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.PredictVFOFlg = 1;
+handles.VFOFlg = 0;
+handles = filterVel(handles);
+guidata(hObject, handles);
 end
