@@ -3180,9 +3180,10 @@ switch answer
         end
 end
 
+
+end
 % Hint: delete(hObject) closes the figure
 delete(hObject);
-end
 end
 
 
