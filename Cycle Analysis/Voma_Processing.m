@@ -2748,7 +2748,11 @@ Results = struct();
 Results = handles.Results;
 name = strrep(handles.RootData(handles.segNum).name,'.mat','_CycleAvg');
 if (handles.filtFlag==1) | (handles.PosfiltFlag==1)
-    Results.QPparams = ['filtfilt Order ',handles.filterorder.String];
+    if handles.PredictVFOFlg
+        Results.QPparams = ['filtfilt Order ',handles.predictedVFO.String];
+    elseif handles.VFOFlg
+        Results.QPparams = ['filtfilt Order ',handles.filterorder.String];
+    end
     Results.QPposParam = [str2num(handles.posFiltOrder.String),str2num(handles.posFiltLeng.String)];
 
 else
