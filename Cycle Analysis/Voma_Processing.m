@@ -283,6 +283,7 @@ end
     handles.linkaxisFlag = true;
     linkaxes([handles.axes4,handles.axes1,handles.angPos])
     
+    handles.predictedValsSavedFlg = 0;
 guidata(hObject, handles);
 
 % UIWAIT makes Voma_Processing wait for user response (see UIRESUME)
@@ -2594,7 +2595,7 @@ function process_file_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 usedInd = handles.cycle_list.UserData;
 usedIndN = handles.cycle_list_Nystag.UserData;
-%Save Filter and cycle Prediction Values
+%Save Filter and cycle Prediction Values to temporary structures
 if handles.LEye.Value && handles.REye.Value
     tt = handles.RootData(handles.segNum).VOMA_data.Data_LE_Vel_LARP(1:2200);
     tt2 = handles.RootData(handles.segNum).VOMA_data.Data_LE_Vel_RALP(1:2200);
@@ -2624,30 +2625,6 @@ if handles.LEye.Value && handles.REye.Value
     handles.PC.avgMis = [handles.PC.avgMis; mean(handles.segment.MisalignR(usedInd)); mean(handles.segment.MisalignR_NystagCorr(usedIndN)); mean(handles.segment.MisalignL(usedInd)); mean(handles.segment.MisalignL_NystagCorr(usedIndN))];
     handles.PC.MaxMis = [handles.PC.MaxMis; max(handles.segment.MisalignR(usedInd)); max(handles.segment.MisalignR_NystagCorr(usedIndN)); max(handles.segment.MisalignL(usedInd)); max(handles.segment.MisalignL_NystagCorr(usedIndN))];
     handles.PC.MinMis = [handles.PC.MinMis; min(handles.segment.MisalignR(usedInd)); min(handles.segment.MisalignR_NystagCorr(usedIndN)); min(handles.segment.MisalignL(usedInd)); min(handles.segment.MisalignL_NystagCorr(usedIndN))];
-
-%     vM = [[handles.PredictCycles.avgMag] mean(handles.segment.maxMagR(usedInd)) mean(handles.segment.maxMagR_NystagCorr(usedIndN)) mean(handles.segment.maxMagL(usedInd)) mean(handles.segment.maxMagL_NystagCorr(usedIndN))];
-%     [vM,I] = sort(vM);
-%     vM1 = [[handles.PredictCycles.MaxMag] max(handles.segment.maxMagR(usedInd)) max(handles.segment.maxMagR_NystagCorr(usedIndN)) max(handles.segment.maxMagL(usedInd)) max(handles.segment.maxMagL_NystagCorr(usedIndN))];
-%     vM2 = [[handles.PredictCycles.MinMag] min(handles.segment.maxMagR(usedInd)) min(handles.segment.maxMagR_NystagCorr(usedIndN)) min(handles.segment.maxMagL(usedInd)) min(handles.segment.maxMagL_NystagCorr(usedIndN))];
-%     vM1 = vM1(I);
-%     vM2 = vM2(I);
-% 
-%     mM = [[handles.PredictCycles.avgMis] mean(handles.segment.MisalignR(usedInd)) mean(handles.segment.MisalignR_NystagCorr(usedIndN)) mean(handles.segment.MisalignL(usedInd)) mean(handles.segment.MisalignL_NystagCorr(usedIndN))];
-%     [mM,I] = sort(mM);
-%     mM1 = [[handles.PredictCycles.MaxMis] max(handles.segment.MisalignR(usedInd)) max(handles.segment.MisalignR_NystagCorr(usedIndN)) max(handles.segment.MisalignL(usedInd)) max(handles.segment.MisalignL_NystagCorr(usedIndN))];
-%     mM2 = [[handles.PredictCycles.MinMis] min(handles.segment.MisalignR(usedInd)) min(handles.segment.MisalignR_NystagCorr(usedIndN)) min(handles.segment.MisalignL(usedInd)) min(handles.segment.MisalignL_NystagCorr(usedIndN))];
-%     mM1 = mM1(I);
-%     mM2 = mM2(I);
-% 
-%     for iii = 1:length(vM)
-%         handles.PredictCycles(iii).avgMag = vM(iii);
-%         handles.PredictCycles(iii).MaxMag = vM1(iii);
-%         handles.PredictCycles(iii).MinMag = vM2(iii);
-% 
-%         handles.PredictCycles(iii).avgMis = mM(iii);
-%         handles.PredictCycles(iii).MaxMis = mM1(iii);
-%         handles.PredictCycles(iii).MinMis = mM2(iii);
-%     end
 elseif handles.LEye.Value
     tt = handles.RootData(handles.segNum).VOMA_data.Data_LE_Vel_LARP(1:2200);
     tt2 = handles.RootData(handles.segNum).VOMA_data.Data_LE_Vel_RALP(1:2200);
@@ -2670,30 +2647,6 @@ elseif handles.LEye.Value
     handles.PC.avgMis = [handles.PC.avgMis; mean(handles.segment.MisalignL(usedInd)); mean(handles.segment.MisalignL_NystagCorr(usedIndN))];
     handles.PC.MaxMis = [handles.PC.MaxMis; max(handles.segment.MisalignL(usedInd)); max(handles.segment.MisalignL_NystagCorr(usedIndN))];
     handles.PC.MinMis = [handles.PC.MinMis; min(handles.segment.MisalignL(usedInd)); min(handles.segment.MisalignL_NystagCorr(usedIndN))];
-
-%     vM = [[handles.PredictCycles.avgMag] mean(handles.segment.maxMagL(usedInd)) mean(handles.segment.maxMagL_NystagCorr(usedIndN))];
-%     [vM,I] = sort(vM);
-%     vM1 = [[handles.PredictCycles.MaxMag] max(handles.segment.maxMagL(usedInd)) max(handles.segment.maxMagL_NystagCorr(usedIndN))];
-%     vM2 = [[handles.PredictCycles.MinMag] min(handles.segment.maxMagL(usedInd)) min(handles.segment.maxMagL_NystagCorr(usedIndN))];
-%     vM1 = vM1(I);
-%     vM2 = vM2(I);
-% 
-%     mM = [[handles.PredictCycles.avgMis] mean(handles.segment.MisalignL(usedInd)) mean(handles.segment.MisalignL_NystagCorr(usedIndN))];
-%     [mM,I] = sort(mM);
-%     mM1 = [[handles.PredictCycles.MaxMis] max(handles.segment.MisalignL(usedInd)) max(handles.segment.MisalignL_NystagCorr(usedIndN))];
-%     mM2 = [[handles.PredictCycles.MinMis] min(handles.segment.MisalignL(usedInd)) min(handles.segment.MisalignL_NystagCorr(usedIndN))];
-%     mM1 = mM1(I);
-%     mM2 = mM2(I);
-% 
-%     for iii = 1:length(vM)
-%         handles.PredictCycles(iii).avgMag = vM(iii);
-%         handles.PredictCycles(iii).MaxMag = vM1(iii);
-%         handles.PredictCycles(iii).MinMag = vM2(iii);
-% 
-%         handles.PredictCycles(iii).avgMis = mM(iii);
-%         handles.PredictCycles(iii).MaxMis = mM1(iii);
-%         handles.PredictCycles(iii).MinMis = mM2(iii);
-%     end
 else
     tt4 = handles.RootData(handles.segNum).VOMA_data.Data_RE_Vel_LARP(1:2200);
     tt5 = handles.RootData(handles.segNum).VOMA_data.Data_RE_Vel_RALP(1:2200);
@@ -2716,32 +2669,8 @@ else
     handles.PC.avgMis = [handles.PC.avgMis; mean(handles.segment.MisalignR(usedInd)); mean(handles.segment.MisalignR_NystagCorr(usedIndN))];
     handles.PC.MaxMis = [handles.PC.MaxMis; max(handles.segment.MisalignR(usedInd)); max(handles.segment.MisalignR_NystagCorr(usedIndN))];
     handles.PC.MinMis = [handles.PC.MinMis; min(handles.segment.MisalignR(usedInd)); min(handles.segment.MisalignR_NystagCorr(usedIndN))];
-
-%     vM = [[handles.PredictCycles.avgMag] mean(handles.segment.maxMagR(usedInd)) mean(handles.segment.maxMagR_NystagCorr(usedIndN))];
-%     [vM,I] = sort(vM);
-%     vM1 = [[handles.PredictCycles.MaxMag] max(handles.segment.maxMagR(usedInd)) max(handles.segment.maxMagR_NystagCorr(usedIndN))];
-%     vM2 = [[handles.PredictCycles.MinMag] min(handles.segment.maxMagR(usedInd)) min(handles.segment.maxMagR_NystagCorr(usedIndN))];
-%     vM1 = vM1(I);
-%     vM2 = vM2(I);
-% 
-%     mM = [[handles.PredictCycles.avgMis] mean(handles.segment.MisalignR(usedInd)) mean(handles.segment.MisalignR_NystagCorr(usedIndN))];
-%     [mM,I] = sort(mM);
-%     mM1 = [[handles.PredictCycles.MaxMis] max(handles.segment.MisalignR(usedInd)) max(handles.segment.MisalignR_NystagCorr(usedIndN))];
-%     mM2 = [[handles.PredictCycles.MinMis] min(handles.segment.MisalignR(usedInd)) min(handles.segment.MisalignR_NystagCorr(usedIndN))];
-%     mM1 = mM1(I);
-%     mM2 = mM2(I);
-% 
-%     for iii = 1:length(vM)
-%         handles.PredictCycles(iii).avgMag = vM(iii);
-%         handles.PredictCycles(iii).MaxMag = vM1(iii);
-%         handles.PredictCycles(iii).MinMag = vM2(iii);
-% 
-%         handles.PredictCycles(iii).avgMis = mM(iii);
-%         handles.PredictCycles(iii).MaxMis = mM1(iii);
-%         handles.PredictCycles(iii).MinMis = mM2(iii);
-%     end
-    
 end
+handles.predictedValsSavedFlg = 0;
 
 cycNum = 1;
 Results = struct();
@@ -3007,7 +2936,7 @@ else
     handles.PC.MinMag = [];
     handles.PC.MaxMis = [];
     handles.PC.MinMis = [];
-
+    handles.predictedValsSavedFlg = 1;
 end
 
 guidata(hObject, handles);
@@ -3025,109 +2954,6 @@ else
     handles.FacialNerve = 1;
     handles.facial_nerve.BackgroundColor = 'Red';
 end
-guidata(hObject, handles);
-end
-
-% --- Executes on button press in redo.
-function redo_Callback(hObject, eventdata, handles)
-% hObject    handle to redo (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-if handles.segNum>1
-    handles.segNum = handles.segNum-1;
-    handles = nextFile(handles);
-    guidata(hObject, handles);
-end
-end
-
-% --- Executes on button press in reset.
-function reset_Callback(hObject, eventdata, handles)
-% hObject    handle to reset (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-handles.posFiltLeng.String = '3';
-handles.posFiltOrder.String = '1';
-handles.filterorder.String = '9';
-handles.nystagCorr.Value = 0;
-
-handles.segment.PosfiltFlag = 0;
-handles.segment.filtFlag = 0;
-handles.segment.NystagCorrFlag = 0;
-handles.segment.LE_LARP=handles.RootData(handles.segNum).VOMA_data.Data_LE_Vel_LARP;
-handles.segment.LE_RALP=handles.RootData(handles.segNum).VOMA_data.Data_LE_Vel_RALP;
-handles.segment.LE_Z=handles.RootData(handles.segNum).VOMA_data.Data_LE_Vel_Z;
-handles.segment.LE_X=handles.RootData(handles.segNum).VOMA_data.Data_LE_Vel_X;
-handles.segment.LE_Y=handles.RootData(handles.segNum).VOMA_data.Data_LE_Vel_Y;
-handles.segment.RE_LARP=handles.RootData(handles.segNum).VOMA_data.Data_RE_Vel_LARP;
-handles.segment.RE_RALP=handles.RootData(handles.segNum).VOMA_data.Data_RE_Vel_RALP;
-handles.segment.RE_Z=handles.RootData(handles.segNum).VOMA_data.Data_RE_Vel_Z;
-handles.segment.RE_X=handles.RootData(handles.segNum).VOMA_data.Data_RE_Vel_X;
-handles.segment.RE_Y=handles.RootData(handles.segNum).VOMA_data.Data_RE_Vel_Y;
-
-handles.segment.LE_LARP_Filt=handles.RootData(handles.segNum).VOMA_data.Data_LE_Vel_LARP;
-handles.segment.LE_RALP_Filt=handles.RootData(handles.segNum).VOMA_data.Data_LE_Vel_RALP;
-handles.segment.LE_Z_Filt=handles.RootData(handles.segNum).VOMA_data.Data_LE_Vel_Z;
-handles.segment.LE_X_Filt=handles.RootData(handles.segNum).VOMA_data.Data_LE_Vel_X;
-handles.segment.LE_Y_Filt=handles.RootData(handles.segNum).VOMA_data.Data_LE_Vel_Y;
-handles.segment.RE_LARP_Filt=handles.RootData(handles.segNum).VOMA_data.Data_RE_Vel_LARP;
-handles.segment.RE_RALP_Filt=handles.RootData(handles.segNum).VOMA_data.Data_RE_Vel_RALP;
-handles.segment.RE_Z_Filt=handles.RootData(handles.segNum).VOMA_data.Data_RE_Vel_Z;
-handles.segment.RE_X_Filt=handles.RootData(handles.segNum).VOMA_data.Data_RE_Vel_X;
-handles.segment.RE_Y_Filt=handles.RootData(handles.segNum).VOMA_data.Data_RE_Vel_Y;
-
-handles.segment.maxMagL = [];
-handles.segment.MisalignL = [];
-handles.segment.maxMagL = [];
-handles.segment.MisalignL = [];
-handles.segment.maxMagR = [];
-handles.segment.MisalignR = [];
-handles.segment.maxMagR = [];
-handles.segment.MisalignR = [];
-
-handles.segment.LE_LARP_NystagCorr=[];
-handles.segment.LE_RALP_NystagCorr=[];
-handles.segment.LE_Z_NystagCorr=[];
-handles.segment.LE_X_NystagCorr=[];
-handles.segment.LE_Y_NystagCorr=[];
-handles.segment.RE_LARP_NystagCorr=[];
-handles.segment.RE_RALP_NystagCorr=[];
-handles.segment.RE_Z_NystagCorr=[];
-handles.segment.RE_X_NystagCorr=[];
-handles.segment.RE_Y_NystagCorr=[];
-
-handles.segment.LE_LARP_NystagCorr_Filt=[];
-handles.segment.LE_RALP_NystagCorr_Filt=[];
-handles.segment.LE_Z_NystagCorr_Filt=[];
-handles.segment.LE_X_NystagCorr_Filt=[];
-handles.segment.LE_Y_NystagCorr_Filt=[];
-handles.segment.RE_LARP_NystagCorr_Filt=[];
-handles.segment.RE_RALP_NystagCorr_Filt=[];
-handles.segment.RE_Z_NystagCorr_Filt=[];
-handles.segment.RE_X_NystagCorr_Filt=[];
-handles.segment.RE_Y_NystagCorr_Filt=[];
-
-handles.segment.maxMagL_NystagCorr = [];
-handles.segment.MisalignL_NystagCorr = [];
-handles.segment.maxMagL_NystagCorr = [];
-handles.segment.MisalignL_NystagCorr = [];
-handles.segment.maxMagR_NystagCorr = [];
-handles.segment.MisalignR_NystagCorr = [];
-handles.segment.maxMagR_NystagCorr = [];
-handles.segment.MisalignR_NystagCorr = [];
-
-handles.segment.LEp_X=handles.RootData(handles.segNum).VOMA_data.Data_LE_Pos_X;
-handles.segment.LEp_Y=handles.RootData(handles.segNum).VOMA_data.Data_LE_Pos_Y;
-handles.segment.LEp_Z=handles.RootData(handles.segNum).VOMA_data.Data_LE_Pos_Z;
-handles.segment.REp_X=handles.RootData(handles.segNum).VOMA_data.Data_RE_Pos_X;
-handles.segment.REp_Y=handles.RootData(handles.segNum).VOMA_data.Data_RE_Pos_Y;
-handles.segment.REp_Z=handles.RootData(handles.segNum).VOMA_data.Data_RE_Pos_Z;
-
-handles.segment.stim=handles.RootData(handles.segNum).VOMA_data.Stim_Trace;
-handles.segment.stimT=handles.RootData(handles.segNum).VOMA_data.Stim_t;
-handles.segment.t=handles.RootData(handles.segNum).VOMA_data.Eye_t;
-
-guidata(hObject, handles);
-handles = filter_Plot_Pos(handles);
 guidata(hObject, handles);
 end
 
@@ -3200,16 +3026,6 @@ end
 handles = filter_Plot_Pos(handles);
 guidata(hObject, handles);
 % Hint: get(hObject,'Value') returns toggle state of REye
-end
-
-% --- Executes on button press in skip.
-function skip_Callback(hObject, eventdata, handles)
-% hObject    handle to skip (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-handles.segNum = handles.segNum+1;
-handles = nextFile(handles);
-guidata(hObject, handles);
 end
 
 % --- Executes on button press in RearImplant.
@@ -3290,6 +3106,7 @@ function figure1_CloseRequestFcn(hObject, eventdata, handles)
 % hObject    handle to figure1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+if ~handles.predictedValsSavedFlg
 answer = questdlg('Would you like to save predictive data?', 'Save Predictive Data','Yes','No','Yes');
 switch answer
     case 'Yes'
@@ -3365,6 +3182,7 @@ end
 
 % Hint: delete(hObject) closes the figure
 delete(hObject);
+end
 end
 
 
