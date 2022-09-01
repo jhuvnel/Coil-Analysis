@@ -86,10 +86,7 @@ handles.NystagVChange = 1;
 
 handles.LearImplant.BackgroundColor = [1 0 0];
 handles.RearImplant.BackgroundColor = [1 0 0];
-% handles.p = pan;
-% handles.p.ButtonDownFilter = @mycallback;
-% handles.p.Enable = 'on';
-% Update handles structure
+
 handles.resultFields.Fs = [];
 
 handles.resultFields.ll_cyc = [];
@@ -218,11 +215,6 @@ handles.resultFields.cycNum_NystagCorr = [];
 handles.RawDataFilesDir = [];
 handles.axes4.Title.String = 'Eye Velocity: Nystagmus Correction';
 handles.axes1.Title.String = 'Eye Velocity';
-handles.cycles_toSave.Position(1) = 0.42;
-handles.cycles_toSave.Position(3) = .05;
-handles.cycles_toSave_Nystag.Position(3) = .05;
-handles.cycles_toSave_Nystag.Position(1) = .5;
-handles.cycles_toSave_Nystag.Position(1) = .48;
 handles.cycavg.Title.String = 'Cycle Average';
 handles.cycavg_Nystag.Title.String = 'Cycle Average: Nystagmus Correction';
 
@@ -230,6 +222,23 @@ handles.ax1.ClippingStyle = 'rectangle';
 handles.ax4.ClippingStyle = 'rectangle';
 handles.cycavg.ClippingStyle = 'rectangle';
 handles.cycavg_Nystag.ClippingStyle = 'rectangle';
+handles.MisalignValsPlot.ClippingStyle = 'rectangle';
+handles.NormMisalignValsPlot.ClippingStyle = 'rectangle';
+
+handles.MisalignValsPlot.Title.String = 'Misalign';
+handles.NormMisalignValsPlot.Title.String = 'Nrom Misalign';
+handles.MisalignValsPlot.XLim = [0 9];
+handles.NormMisalignValsPlot.XLim = [0 9];
+
+handles.MisalignValsPlot.XTick = [3 7];
+handles.MisalignValsPlot.XTickLabel = [{'L'} {'R'}];
+handles.MisalignValsPlot.FontSize = 9;
+handles.MisalignValsPlot.FontWeight = 'bold';
+
+handles.NormMisalignValsPlot.XTick = [3 7];
+handles.NormMisalignValsPlot.XTickLabel = [{'L'} {'R'}];
+handles.NormMisalignValsPlot.FontSize = 9;
+handles.NormMisalignValsPlot.FontWeight = 'bold';
 
 handles.posFiltLeng.String = '3';
 
@@ -433,6 +442,8 @@ if handles.LearImplant.BackgroundColor == [0.94 0.94 0.94]
     cla(handles.angPos)
     cla(handles.cycavg)
     cla(handles.cycavg_Nystag)
+    cla(handles.MisalignValsPlot)
+    cla(handles.NormMisalignValsPlot)
     handles.segment = [];
     handles.skip = 1;
     handles.FinishedFiles = [];
@@ -456,6 +467,8 @@ cla(handles.axes1)
 cla(handles.axes4)
 cla(handles.cycavg)
 cla(handles.cycavg_Nystag)
+cla(handles.MisalignValsPlot)
+cla(handles.NormMisalignValsPlot)
 handles.facial_nerve.BackgroundColor = [.94 .94 .94];
 handles.rawV.Value = 0;
 handles.FacialNerve = 0;
@@ -494,20 +507,6 @@ if any(ismember(handles.FinishedFiles,handles.VOMANames(handles.segNum)))
         handles.posFiltOrder.String = num2str(handles.t.QPposParam(1));
         handles.posFiltLeng.String = num2str(handles.t.QPposParam(2));
     end
-
-%     if isfield(handles.t,'NystagCorr')
-%         handles.nystagCorr.Value = handles.t.NystagCorr;
-%     else
-%         if isfield(handles.t,'SecondM')
-%             if isempty(handles.t.SecondM.ll_cyc) && isempty(handles.t.SecondM.rl_cyc)
-%                 handles.nystagCorr.Value = 0;
-%             else
-%                 handles.nystagCorr.Value = 1;
-%             end
-%         else
-%             handles.nystagCorr.Value = 0;
-%         end
-%     end
 
     if ~isempty(handles.cycle_list.String) && ~strcmp(handles.cycle_list.String{1},'')
         handles.cycle_list.String = [''];
@@ -1590,7 +1589,7 @@ if handles.RegVChange
     if any([handles.LEye.Value handles.REye.Value])
         l=legend(handles.axes1,ldgLines,ldgNames);
         l.FontSize = 4;
-        l.Position(1) = .38;
+        l.Position(1) = .365;
         if length(ldgLines) == 3
             l.Position(2) = .635;
         else
@@ -1774,7 +1773,7 @@ if handles.NystagVChange
     if any([handles.LEye.Value handles.REye.Value])
         l=legend(handles.axes4,ldgLines,ldgNames);
         l.FontSize = 4;
-        l.Position(1) = .38;
+        l.Position(1) = .365;
         if length(ldgLines) == 3
             l.Position(2) = .345;
         else
@@ -2080,6 +2079,8 @@ function plot_cyc_avg(handles)
 lower = [];
 upper = [];
 if handles.RegVChange
+    misL = [];
+    misR = [];
     set(handles.figure1,'CurrentAxes',handles.cycavg)
     lstyle = '-';
     cla(handles.cycavg)
@@ -2112,6 +2113,7 @@ if handles.RegVChange
         set(p.lz.mainLine,'LineStyle',lstyle)
         
         magsL = [];
+        nums2U = [];
         if isfield(handles.segment,'pullIndsL')
             if handles.segNum<= str2num(handles.total_files.String)
                 cycLength = length(handles.segment.pullIndsL);
@@ -2126,6 +2128,8 @@ if handles.RegVChange
                         text(x,yZ,num2str(qt),'Color',handles.color.l_z,'Fontsize',14,'Clipping','on')
                         text(0.105,handles.rotSign*handles.segment.maxMagL(qt),num2str(qt),'Color','k','Fontsize',14,'Clipping','on')
                         magsL = [magsL handles.rotSign*handles.segment.maxMagL(qt)];
+                        misL = [misL handles.segment.MisalignL(qt)];
+                        nums2U = [nums2U {num2str(qt)}];
                     end
                 end
                 handles.avgMag.String = num2str(mean(handles.segment.maxMagL(cyc2Use)));
@@ -2168,6 +2172,7 @@ if handles.RegVChange
         set(p.rz.mainLine,'LineStyle',lstyle)
         
         magsR = [];
+        nums2U = [];
         if isfield(handles.segment,'pullIndsR')
             if handles.segNum<= str2num(handles.total_files.String)
                 cycLength = length(handles.segment.pullIndsR);
@@ -2182,6 +2187,8 @@ if handles.RegVChange
                         text(x,yZ,num2str(qt),'Color',handles.color.r_z,'Fontsize',14,'Clipping','on')
                         text(0.115,handles.rotSign*handles.segment.maxMagR(qt),num2str(qt),'Color','k','Fontsize',14,'Clipping','on')
                         magsR = [magsR handles.rotSign*handles.segment.maxMagR(qt)];
+                        misR = [misR handles.segment.MisalignR(qt)];
+                        nums2U = [nums2U {num2str(qt)}];
                     end
                 end
                 handles.avgMagR.String = num2str(mean(handles.segment.maxMagR(cyc2Use)));
@@ -2217,11 +2224,26 @@ if handles.RegVChange
     plot([0.03 0.03],[lower-40 upper+40],'Color','r','LineStyle','--','LineWidt',2.5)
     hold(handles.cycavg,'off')
 
+    if ~isempty(misL) || ~isempty(misR)
+    set(handles.figure1,'CurrentAxes',handles.MisalignValsPlot)
+    cla(handles.MisalignValsPlot)
+    hold(handles.MisalignValsPlot,'on')
+    if ~isempty(misL)
+        text(repmat(2,1,length(misL)),misL,nums2U,'Color','k','Fontsize',14,'Clipping','on')
+    end
+    if ~isempty(misR)
+        text(repmat(6,1,length(misR)),misR,nums2U,'Color','k','Fontsize',14,'Clipping','on')
+    end
+    handles.MisalignValsPlot.YLim = [min([misR misL])-10 max([misR misL])+10];
+    hold(handles.MisalignValsPlot,'off')
+    end
 end
 
 lower = [];
 upper = [];
 if handles.NystagVChange
+    misL = [];
+    misR = [];
     set(handles.figure1,'CurrentAxes',handles.cycavg_Nystag)
     lstyle = '-';
     cla(handles.cycavg_Nystag)
@@ -2254,6 +2276,7 @@ if handles.NystagVChange
         set(p.lz.mainLine,'LineStyle',lstyle)
         
         magsL = [];
+        nums2U = [];
         if isfield(handles.segment,'pullIndsL_NystagCorr')
             if handles.segNum<= str2num(handles.total_files.String)
                 cycLength = length(handles.segment.pullIndsL_NystagCorr);
@@ -2268,6 +2291,8 @@ if handles.NystagVChange
                         text(x,yZ,num2str(qt),'Color',handles.color.l_z,'Fontsize',14,'Clipping','on')
                         text(0.105,handles.rotSign*handles.segment.maxMagL_NystagCorr(qt),num2str(qt),'Color','black','Fontsize',14,'Clipping','on')
                         magsL = [magsL handles.rotSign*handles.segment.maxMagL_NystagCorr(qt)];
+                        misL = [misL handles.segment.MisalignL_NystagCorr(qt)];
+                        nums2U = [nums2U {num2str(qt)}];
                     end
                 end
                 handles.avgMag_Nystag.String = num2str(mean(handles.segment.maxMagL_NystagCorr(cyc2Use)));
@@ -2312,6 +2337,7 @@ if handles.NystagVChange
         set(p.rz.mainLine,'LineStyle',lstyle)
         
         magsR = [];
+        nums2U = [];
         if isfield(handles.segment,'pullIndsR_NystagCorr')
             if handles.segNum<= str2num(handles.total_files.String)
                 cycLength = length(handles.segment.pullIndsR_NystagCorr);
@@ -2326,6 +2352,8 @@ if handles.NystagVChange
                         text(x,yZ,num2str(qt),'Color',handles.color.r_z,'Fontsize',14,'Clipping','on')
                         text(0.115,handles.rotSign*handles.segment.maxMagR_NystagCorr(qt),num2str(qt),'Color','black','Fontsize',14,'Clipping','on')
                         magsR = [magsR handles.rotSign*handles.segment.maxMagR_NystagCorr(qt)];
+                        misR = [misR handles.segment.MisalignR_NystagCorr(qt)];
+                        nums2U = [nums2U {num2str(qt)}];
                     end
                 end
                 handles.avgMagR_Nystag.String = num2str(mean(handles.segment.maxMagR_NystagCorr(cyc2Use)));
@@ -2359,6 +2387,20 @@ if handles.NystagVChange
     plot([0.1 0.1],[lower-40 upper+40],'Color','k','LineWidt',2.5)
     plot([0.03 0.03],[lower-40 upper+40],'Color','r','LineStyle','--','LineWidt',2.5)
     hold(handles.cycavg_Nystag,'off')
+
+    if ~isempty(misL) || ~isempty(misR)
+    set(handles.figure1,'CurrentAxes',handles.NormMisalignValsPlot)
+    cla(handles.NormMisalignValsPlot)
+    hold(handles.NormMisalignValsPlot,'on')
+    if ~isempty(misL)
+        text(repmat(2,1,length(misL)),misL,nums2U,'Color','k','Fontsize',14,'Clipping','on')
+    end
+    if ~isempty(misR)
+        text(repmat(6,1,length(misR)),misR,nums2U,'Color','k','Fontsize',14,'Clipping','on')
+    end
+    handles.NormMisalignValsPlot.YLim = [min([misR misL])-10 max([misR misL])+10];
+    hold(handles.NormMisalignValsPlot,'off')
+    end
 end
 end
 
