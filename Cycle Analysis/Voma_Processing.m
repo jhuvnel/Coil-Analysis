@@ -490,7 +490,9 @@ handles.files_remaining.String = num2str(handles.segNum);
 
 handles = UpdateFileList(handles);
 
+if ~isempty(handles.FinishedFiles)
 handles = CheckExistingFiles(handles);
+end
 
 handles.files_remaining.String = num2str(handles.segNum);
 name = strrep(handles.RootData(handles.segNum).name,'.mat','_CycleAvg');
