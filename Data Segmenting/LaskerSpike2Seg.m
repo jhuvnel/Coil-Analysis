@@ -133,11 +133,18 @@ segments = str2num(handles.segment_number.String);
 %                 end
 %                 
 %             end
+            if isfield(handles.Segment(fs),'TripolarStim')
+                if handles.Segment(fs).TripolarStim
+                    handles.Segment(fs).ecomb = ['stim',num2str(handles.Segment(fs).stim),'stim',num2str(handles.Segment(fs).SecondStim),'ref',num2str(handles.Segment(fs).refNum)];
+                else
+                    handles.Segment(fs).ecomb = ['stim',num2str(handles.Segment(fs).stim),'ref',num2str(handles.Segment(fs).refNum),'ref',num2str(handles.Segment(fs).SecondRef)];
+                end
+            else
+                handles.Segment(fs).ecomb = ['stim',num2str(handles.Segment(fs).stim),'ref',num2str(handles.Segment(fs).refNum)];
+            end
             
-            handles.Segment(fs).ecomb = ['stim',num2str(handles.Segment(fs).stim),'ref',num2str(handles.Segment(fs).refNum)];
             
-            
-            handles.exp_ecomb.String = {['stim',num2str(handles.Segment(fs).stim),'ref',num2str(handles.Segment(fs).refNum)]};
+            handles.exp_ecomb.String = {handles.Segment(fs).ecomb};
             handles.exp_p1d.String = {['phase1Dur',num2str(handles.Segment(fs).p1d)]};
             handles.exp_p2d.String = {['phase2Dur',num2str(handles.Segment(fs).p2d)]};
             handles.exp_ipg.String = {['IPG',num2str(handles.Segment(fs).ipg)]};
@@ -179,6 +186,7 @@ segments = str2num(handles.segment_number.String);
                 Time_Stim_Interp = handles.Segment(fs).Time_Eye;
                 Stim_Interp = interp1(Time_Stim,Stim,Time_Stim_Interp);
                 Stim_Interp(Stim_Interp<200) = 0;
+                Stim_Interp(isnan(Stim_Interp)) = 0;
             handles.Segment(fs).Time_Stim = Time_Stim_Interp;
             handles.Segment(fs).Stim_Trig = Stim_Interp;
                 

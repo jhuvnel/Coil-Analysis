@@ -379,8 +379,11 @@ else % i.e., the user did NOT provide any angular position data into the routine
                 d(6).hdr.adc.Npoints d(7).hdr.adc.Npoints d(8).hdr.adc.Npoints ...
                 d(9).hdr.adc.Npoints d(10).hdr.adc.Npoints d(11).hdr.adc.Npoints ...
                 d(12).hdr.adc.Npoints d(13).hdr.adc.Npoints d(14).hdr.adc.Npoints]);
-            
-            Fs = 1/(d(1).hdr.adc.SampleInterval(1)*10^-6);
+            if ismember({d(1).hdr.title},'V21to17')
+                Fs = 1/(d(3).hdr.adc.SampleInterval(1)*10^-6);
+            else
+                Fs = 1/(d(1).hdr.adc.SampleInterval(1)*10^-6);
+            end
             
             rawData_L(:,1) = double(d(3).imp.adc(1:len))*d(3).hdr.adc.Scale + d(3).hdr.adc.DC;
             rawData_L(:,2) = double(d(4).imp.adc(1:len))*d(4).hdr.adc.Scale + d(4).hdr.adc.DC;
