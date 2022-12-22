@@ -69,8 +69,28 @@ if keepCycParam
     handles.elecByCanal = elecByCanal;
     if any([handles.params.dSp2d]>0)
         ids = find([handles.params.dSp2d]>0);
-        vs = num2cell(unique([handles.params(ids).p1d]));
-        normBy = cellfun(@num2str, vs, 'UniformOutput',0);
+        if any([handles.params(ids).AvC])
+            if any(~[handles.params(ids).AvC])
+                vs = num2cell(repmat(unique([handles.params(ids).p1d]),1,2));
+                normBy = cellfun(@num2str, vs, 'UniformOutput',0);
+                for i = 1:length(normBy)
+                    if i <= length(normBy)/2
+                        normBy(i) = {['Cathodic',normBy{i}]};
+                    else
+                        normBy(i) = {['Anodic',normBy{i}]};
+                    end
+                end
+            else
+                vs = num2cell(unique([handles.params(ids).p1d]));
+                normBy = cellfun(@num2str, vs, 'UniformOutput',0);
+                for i = 1:length(normBy)
+                   normBy(i) = {['Anodic',normBy{i}]};
+                end
+            end
+        else
+            vs = num2cell(unique([handles.params(ids).p1d]));
+            normBy = cellfun(@num2str, vs, 'UniformOutput',0);
+        end
     else
         normBy = [];
     end
@@ -144,6 +164,7 @@ else
     else
         fBar = waitbar(0,['Processing ',num2str(length(handles.listing)),' Files'],'Name','File Progress');
     end
+    IDsWIn = [];
     for allF = 1:length(handles.listing)
         test = load([handles.listing(allF).folder '\' handles.listing(allF).name]);
         dateT = handles.listing(allF).name;
@@ -166,16 +187,26 @@ else
                 normFlg = 1;
                 handles.params(allF).dSp2d = normNum;%test.Results.segmentData.p1d;
                 if allF >1
-                    if handles.params(allF-1).dSp2d == -1
-                        norm2Use = [];
+                    if ~isequal(handles.params(allF-1).eCombs, handles.params(allF).eCombs)
+                        if handles.params(allF-1).dSp2d == -1
+                            norm2Use = [];
+                            IDsWIn = [];
+                        end
+                        norm2Use = [norm2Use normNum];
+                    else
+                        if any([handles.params(IDsWIn).dSp2d] < 0)
+
+                        else
+                            norm2Use = [norm2Use normNum];
+                        end
                     end
-                    norm2Use = [norm2Use normNum];
                 else
                     norm2Use = [norm2Use normNum];
                 end
-
+                IDsWIn = [IDsWIn allF];
                 normNum = normNum +1;
             else
+                IDsWIn = [IDsWIn allF];
                 handles.params(allF).dSp2d = -1;
             end
 
@@ -327,8 +358,8 @@ else
 
 
             handles.params(allF).FacialNerve = test.Results.FacialNerve;
-            if isfield(test.Results,'AvC')
-                handles.params(allF).AvC = test.Results.AvC;
+            if contains(test.Results.name,'AnodicFirst')
+                handles.params(allF).AvC = 1;
             else
                 handles.params(allF).AvC = 0;
             end
@@ -553,50 +584,60 @@ if appFlg
     if normFlg
         for r = 1:length(handles.listing)
             if normFlg && ~isempty(handles.params(r).normInd)
-%%%%% NEED TO CHECK WHEN WORKING WITH ANODIC VS CATHODIC
+                %%%%% NEED TO CHECK WHEN WORKING WITH ANODIC VS CATHODIC
                 for times = 1:length(handles.params(r).normInd)
+                    
                     corrInds = find([handles.params.dSp2d]==handles.params(r).normInd(times));
+                    if any([handles.params.AvC])
+                        if handles.params(corrInds).AvC
+                            AvCStr = 'Anodic';
+                        else
+                            AvCStr = 'Cathodic';
+                        end
+                    else
+                        AvCStr = '';
+                    end
                     tempMag = handles.params(r).MagL./mean(handles.params(corrInds).MagL);
                     tempMis = handles.params(r).MisalignL./mean(handles.params(corrInds).MisalignL);
-                    handles = setfield(handles,'params',{r},['MagL',num2str(handles.params(corrInds).p1d)],tempMag);
-                    handles = setfield(handles,'params',{r},['MisalignL',num2str(handles.params(corrInds).p1d)],tempMis);
-                    handles = setfield(handles,'params',{r},['meanMagL',num2str(handles.params(corrInds).p1d)],mean(tempMag));
-                    handles = setfield(handles,'params',{r},['meanMisalignL',num2str(handles.params(corrInds).p1d)],mean(tempMis));
-                    handles = setfield(handles,'params',{r},['stdMagL',num2str(handles.params(corrInds).p1d)],std(tempMag));
-                    handles = setfield(handles,'params',{r},['stdMisalignL',num2str(handles.params(corrInds).p1d)],std(tempMis));
+                    handles = setfield(handles,'params',{r},['MagL',AvCStr,num2str(handles.params(corrInds).p1d)],tempMag);
+                    handles = setfield(handles,'params',{r},['MisalignL',AvCStr,num2str(handles.params(corrInds).p1d)],tempMis);
+                    handles = setfield(handles,'params',{r},['meanMagL',AvCStr,num2str(handles.params(corrInds).p1d)],mean(tempMag));
+                    handles = setfield(handles,'params',{r},['meanMisalignL',AvCStr,num2str(handles.params(corrInds).p1d)],mean(tempMis));
+                    handles = setfield(handles,'params',{r},['stdMagL',AvCStr,num2str(handles.params(corrInds).p1d)],std(tempMag));
+                    handles = setfield(handles,'params',{r},['stdMisalignL',AvCStr,num2str(handles.params(corrInds).p1d)],std(tempMis));
 
                     tempMag_NystagCorr = handles.params(r).MagL_NystagCorr./mean(handles.params(corrInds).MagL_NystagCorr);
                     tempMis_NystagCorr = handles.params(r).MisalignL_NystagCorr./mean(handles.params(corrInds).MisalignL_NystagCorr);
-                    handles = setfield(handles,'params',{r},['MagL','_NystagCorr',num2str(handles.params(corrInds).p1d)],tempMag_NystagCorr);
-                    handles = setfield(handles,'params',{r},['MisalignL','_NystagCorr',num2str(handles.params(corrInds).p1d)],tempMis_NystagCorr);
-                    handles = setfield(handles,'params',{r},['meanMagL','_NystagCorr',num2str(handles.params(corrInds).p1d)],mean(tempMag_NystagCorr));
-                    handles = setfield(handles,'params',{r},['meanMisalignL','_NystagCorr',num2str(handles.params(corrInds).p1d)],mean(tempMis_NystagCorr));
-                    handles = setfield(handles,'params',{r},['stdMagL','_NystagCorr',num2str(handles.params(corrInds).p1d)],std(tempMag_NystagCorr));
-                    handles = setfield(handles,'params',{r},['stdMisalignL','_NystagCorr',num2str(handles.params(corrInds).p1d)],std(tempMis_NystagCorr));
+                    handles = setfield(handles,'params',{r},['MagL','_NystagCorr',AvCStr,num2str(handles.params(corrInds).p1d)],tempMag_NystagCorr);
+                    handles = setfield(handles,'params',{r},['MisalignL','_NystagCorr',AvCStr,num2str(handles.params(corrInds).p1d)],tempMis_NystagCorr);
+                    handles = setfield(handles,'params',{r},['meanMagL','_NystagCorr',AvCStr,num2str(handles.params(corrInds).p1d)],mean(tempMag_NystagCorr));
+                    handles = setfield(handles,'params',{r},['meanMisalignL','_NystagCorr',AvCStr,num2str(handles.params(corrInds).p1d)],mean(tempMis_NystagCorr));
+                    handles = setfield(handles,'params',{r},['stdMagL','_NystagCorr',AvCStr,num2str(handles.params(corrInds).p1d)],std(tempMag_NystagCorr));
+                    handles = setfield(handles,'params',{r},['stdMisalignL','_NystagCorr',AvCStr,num2str(handles.params(corrInds).p1d)],std(tempMis_NystagCorr));
 
                     tempMag = handles.params(r).MagR./mean(handles.params(corrInds).MagR);
                     tempMis = handles.params(r).MisalignR./mean(handles.params(corrInds).MisalignR);
-                    handles = setfield(handles,'params',{r},['MagR',num2str(handles.params(corrInds).p1d)],tempMag);
-                    handles = setfield(handles,'params',{r},['MisalignR',num2str(handles.params(corrInds).p1d)],tempMis);
-                    handles = setfield(handles,'params',{r},['meanMagR',num2str(handles.params(corrInds).p1d)],mean(tempMag));
-                    handles = setfield(handles,'params',{r},['meanMisalignR',num2str(handles.params(corrInds).p1d)],mean(tempMis));
-                    handles = setfield(handles,'params',{r},['stdMagR',num2str(handles.params(corrInds).p1d)],std(tempMag));
-                    handles = setfield(handles,'params',{r},['stdMisalignR',num2str(handles.params(corrInds).p1d)],std(tempMis));
+                    handles = setfield(handles,'params',{r},['MagR',AvCStr,num2str(handles.params(corrInds).p1d)],tempMag);
+                    handles = setfield(handles,'params',{r},['MisalignR',AvCStr,num2str(handles.params(corrInds).p1d)],tempMis);
+                    handles = setfield(handles,'params',{r},['meanMagR',AvCStr,num2str(handles.params(corrInds).p1d)],mean(tempMag));
+                    handles = setfield(handles,'params',{r},['meanMisalignR',AvCStr,num2str(handles.params(corrInds).p1d)],mean(tempMis));
+                    handles = setfield(handles,'params',{r},['stdMagR',AvCStr,num2str(handles.params(corrInds).p1d)],std(tempMag));
+                    handles = setfield(handles,'params',{r},['stdMisalignR',AvCStr,num2str(handles.params(corrInds).p1d)],std(tempMis));
 
                     tempMag_NystagCorr = handles.params(r).MagR_NystagCorr./mean(handles.params(corrInds).MagR_NystagCorr);
                     tempMis_NystagCorr = handles.params(r).MisalignR_NystagCorr./mean(handles.params(corrInds).MisalignR_NystagCorr);
-                    handles = setfield(handles,'params',{r},['MagR','_NystagCorr',num2str(handles.params(corrInds).p1d)],tempMag_NystagCorr);
-                    handles = setfield(handles,'params',{r},['MisalignR','_NystagCorr',num2str(handles.params(corrInds).p1d)],tempMis_NystagCorr);
-                    handles = setfield(handles,'params',{r},['meanMagR','_NystagCorr',num2str(handles.params(corrInds).p1d)],mean(tempMag_NystagCorr));
-                    handles = setfield(handles,'params',{r},['meanMisalignR','_NystagCorr',num2str(handles.params(corrInds).p1d)],mean(tempMis_NystagCorr));
-                    handles = setfield(handles,'params',{r},['stdMagR','_NystagCorr',num2str(handles.params(corrInds).p1d)],std(tempMag_NystagCorr));
-                    handles = setfield(handles,'params',{r},['stdMisalignR','_NystagCorr',num2str(handles.params(corrInds).p1d)],std(tempMis_NystagCorr));
+                    handles = setfield(handles,'params',{r},['MagR','_NystagCorr',AvCStr,num2str(handles.params(corrInds).p1d)],tempMag_NystagCorr);
+                    handles = setfield(handles,'params',{r},['MisalignR','_NystagCorr',AvCStr,num2str(handles.params(corrInds).p1d)],tempMis_NystagCorr);
+                    handles = setfield(handles,'params',{r},['meanMagR','_NystagCorr',AvCStr,num2str(handles.params(corrInds).p1d)],mean(tempMag_NystagCorr));
+                    handles = setfield(handles,'params',{r},['meanMisalignR','_NystagCorr',AvCStr,num2str(handles.params(corrInds).p1d)],mean(tempMis_NystagCorr));
+                    handles = setfield(handles,'params',{r},['stdMagR','_NystagCorr',AvCStr,num2str(handles.params(corrInds).p1d)],std(tempMag_NystagCorr));
+                    handles = setfield(handles,'params',{r},['stdMisalignR','_NystagCorr',AvCStr,num2str(handles.params(corrInds).p1d)],std(tempMis_NystagCorr));
 
                     if isempty(normBy)
-                        normBy = {num2str(handles.params(corrInds).p1d)};
+                        normBy = {[AvCStr,num2str(handles.params(corrInds).p1d)]};
                     else
-                        if ~any(ismember(normBy,num2str(handles.params(corrInds).p1d)))
-                            normBy = [normBy; num2str(handles.params(corrInds).p1d)];
+                        if ~any(ismember(normBy,[AvCStr,num2str(handles.params(corrInds).p1d)]))
+                            normBy = [normBy; [AvCStr,num2str(handles.params(corrInds).p1d)]];
                         end
                     end
                 end
