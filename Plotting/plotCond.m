@@ -52,21 +52,32 @@ end
 if keepCycParam
     load('CycleParams.mat');
     handles.params = tempS;
-    animal = handles.params(1).animal;
-    if all(all(handles.params(1).cycavgL==0))
-        Leye = 0;
-    else
-        Leye = 1;
+    animal = unique({handles.params.animal});
+    AnimalsandEyes = [];
+    for ii = 1:length(animal)
+        ids2U = ismember({handles.params.animal},animal(ii));
+        if any(~isnan([handles.params(ids2U).meanMagL]))
+            AnimalsandEyes = [AnimalsandEyes {[animal{ii}(1),'-LEye']}];
+        end
+        if any(~isnan([handles.params(ids2U).meanMagR]))
+            AnimalsandEyes = [AnimalsandEyes {[animal{ii}(1),'-REye']}];
+        end
     end
+%     if all(all(handles.params(1).cycavgL==0))
+%         Leye = 0;
+%     else
+%         Leye = 1;
+%     end
+% 
+%     if all(all(handles.params(1).cycavgR==0))
+%         Reye = 0;
+%     else
+%         Reye = 1;
+%     end
 
-    if all(all(handles.params(1).cycavgR==0))
-        Reye = 0;
-    else
-        Reye = 1;
-    end
-
-    elecByCanal = handles.(animal);
-    handles.elecByCanal = elecByCanal;
+%     elecByCanal = handles.(animal);
+%     handles.elecByCanal = elecByCanal;
+%%%May need to be reworked if there are multiple animals%%%%%
     if any([handles.params.dSp2d]>0)
         ids = find([handles.params.dSp2d]>0);
         if any([handles.params(ids).AvC])
@@ -173,7 +184,7 @@ else
         handles.params(allF).name = handles.listing(allF).name;
         handles.params(allF).animal = test.Results.segmentData.subj;
         animal = handles.params(allF).animal;
-        elecByCanal = handles.(animal);
+%         elecByCanal = handles.(animal);
         if isfield(test.Results, 'segmentData')
             handles.params(allF).stim = test.Results.segmentData.stim;
             handles.params(allF).ref = test.Results.segmentData.refNum;
@@ -565,6 +576,17 @@ else
         end
 
     end
+    animal = unique({handles.params.animal});
+    AnimalsandEyes = [];
+    for ii = 1:length(animal)
+        ids2U = ismember({handles.params.animal},animal(ii));
+        if any(~isnan([handles.params(ids2U).meanMagL]))
+            AnimalsandEyes = [AnimalsandEyes {[animal{ii}(1),'-LEye']}];
+        end
+        if any(~isnan([handles.params(ids2U).meanMagR]))
+            AnimalsandEyes = [AnimalsandEyes {[animal{ii}(1),'-REye']}];
+        end
+    end
 
 
     if appFlg
@@ -682,14 +704,14 @@ else
     end
 end
 
-%Add code to check for duplicate data points
+%Code to check for duplicate data points
 if ~isfield(handles.params,'TOUSE') || ~keepCycParam
     handles.ProgressBar.Title.String = ['Checking For Duplicates'];
     handles.PBarObj.Position(3) = 0/length(handles.listing)*1000;
     handles.PBarTxt.String = 'Waiting';
     drawnow
     dupInd = [];
-    tp = struct('stim', {handles.params.stim}, 'ref', {handles.params.ref},...
+    tp = struct('animal', {handles.params.animal}, 'stim', {handles.params.stim}, 'ref', {handles.params.ref},...
         'p1d', {handles.params.p1d}, 'ipg', {handles.params.ipg},...
         'p2d', {handles.params.p2d}, 'p1amp', {handles.params.p1amp},...
         'p2amp', {handles.params.p2amp}, 'dSp2d', {handles.params.dSp2d});
@@ -751,27 +773,52 @@ tempS = handles.params;
 if ~keepCycParam
     save('CycleParams.mat','tempS')
 end
-tb=cell2table({handles.params.eCombs}');
+tb=cell2table([{handles.params.animal}' { handles.params.eCombs}']);
 [tb,ia]=unique(tb);
 temp = table2cell(tb);
 
 tpl = [];
 tpr = [];
 tph = [];
+handles.LARPCombs = [];
+handles.RALPCombs = [];
+handles.LHRHCombs = [];
+
 for o = 1:length(temp)
-    handles.allCombs(o,1:2) = temp{o};
-    toPlace = [num2str(temp{o}(1)),'-',num2str(temp{o}(2))];
+    handles.allCombs(o,1:2) = temp{o,2};
+    toPlace = [num2str(temp{o,2}(1)),'-',num2str(temp{o,2}(2))];
     if appFlg
-        switch temp{o}(1)
-            case num2cell(handles.elecByCanal{1})
-                handles.LARPCombs = [handles.LARPCombs; temp(o)];
-                tpl = [tpl {toPlace}];
-            case num2cell(handles.elecByCanal{2})
-                handles.RALPCombs = [handles.RALPCombs; temp(o)];
-                tpr = [tpr {toPlace}];
-            case num2cell(handles.elecByCanal{3})
-                handles.LHRHCombs = [handles.LHRHCombs; temp(o)];
-                tph = [tph {toPlace}];
+        switch temp{o,2}(1)
+            case num2cell(handles.AnimalProperties.(temp{o,1}).elecByCanal{1})
+                if isempty(tpl)
+                    handles.LARPCombs = [handles.LARPCombs; temp(o,2)];%%%%
+                    tpl = [tpl {toPlace}];
+                else
+                    if ~any(cellfun(@(C) isequal(C, [temp{o,2}]), handles.LARPCombs))
+                        handles.LARPCombs = [handles.LARPCombs; temp(o,2)];
+                        tpl = [tpl {toPlace}];
+                    end
+                end
+            case num2cell(handles.AnimalProperties.(temp{o,1}).elecByCanal{2})
+                if isempty(tpr)
+                    handles.RALPCombs = [handles.RALPCombs; temp(o,2)];
+                    tpr = [tpr {toPlace}];
+                else
+                    if ~any(cellfun(@(C) isequal(C, [temp{o,2}]), handles.RALPCombs))
+                        handles.RALPCombs = [handles.RALPCombs; temp(o,2)];
+                        tpr = [tpr {toPlace}];
+                    end
+                end
+            case num2cell(handles.AnimalProperties.(temp{o,1}).elecByCanal{3})
+                if isempty(tph)
+                    handles.LHRHCombs = [handles.LHRHCombs; temp(o,2)];
+                    tph = [tph {toPlace}];
+                else
+                    if ~any(cellfun(@(C) isequal(C, [temp{o,2}]), handles.LHRHCombs))
+                        handles.LHRHCombs = [handles.LHRHCombs; temp(o,2)];
+                        tph = [tph {toPlace}];
+                    end
+                end
         end
 
         if normFlg
@@ -790,11 +837,14 @@ for o = 1:length(temp)
 
 end
 
+
 if appFlg
     handles.animal = animal;
-    handles.LEye = Leye;
-    handles.REye = Reye;
-    handles.allStim = unique([handles.params.stim]);
+    handles.AnimalsandEyes = AnimalsandEyes;
+    handles.CreateAndEBtnGroups();
+%     handles.LEye = Leye;
+%     handles.REye = Reye;
+    handles.allStim = unique([handles.params.stim]);%%%%
     handles.allRef = unique([handles.params.ref]);
     handles.allP1d = unique([handles.params.p1d]);
     handles.allP2d = unique([handles.params.p2d]);
@@ -803,17 +853,17 @@ if appFlg
     handles.allIPG = unique([handles.params.ipg]);
     handles.normBy = normBy;
 
-    handles.AnimalEditField.Value = animal;
-    if Leye
-        handles.LeftEyeButton.BackgroundColor = 'g';
-    else
-        handles.LeftEyeButton.BackgroundColor = 'r';
-    end
-    if Reye
-        handles.RightEyeButton.BackgroundColor = 'g';
-    else
-        handles.RightEyeButton.BackgroundColor = 'r';
-    end
+%     handles.AnimalEditField.Value = animal;
+%     if Leye
+%         handles.LeftEyeButton.BackgroundColor = 'g';
+%     else
+%         handles.LeftEyeButton.BackgroundColor = 'r';
+%     end
+%     if Reye
+%         handles.RightEyeButton.BackgroundColor = 'g';
+%     else
+%         handles.RightEyeButton.BackgroundColor = 'r';
+%     end
 
     handles.LarpCombs.Items = [{'None'} tpl];
     handles.RalpCombs.Items = [{'None'} tpr];
