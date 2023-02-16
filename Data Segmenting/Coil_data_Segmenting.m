@@ -660,30 +660,9 @@ else
             
             
             if length(find(ismember({handles.Segment.seg_filename}',{handles.seg_filename.String})))>1
-                if handles.yestoallFlag
-                else
-                    if handles.notoallFlag
-                        answer = 'No';
-                    else
-                        answer = nbuttondlg([{handles.seg_filename.String};{'This file name already exsits, would you like to overwrite it?'}],{'Yes','No','Yes To All','No To All'},'DefaultButton',2,'PromptTextHeight',50);
-                    end
-                    switch answer
-                        case 'Yes'
-                        case 'No'
-                            tot = length(find(~cellfun('isempty',strfind({handles.Segment.seg_filename}',handles.seg_filename.String))));
-                            handles.seg_filename.String = [handles.seg_filename.String, '_', num2str(tot)];
-                            handles.Segment(segments).seg_filename = handles.seg_filename.String;
-                        case 'Yes To All'
-                            handles.string_addon = [''];
-                            handles.yestoallFlag = 1;
-                            
-                        case 'No To All'
-                            tot = length(find(~cellfun('isempty',strfind({handles.Segment.seg_filename}',handles.seg_filename.String))));
-                            handles.seg_filename.String = [handles.seg_filename.String, '_', num2str(tot)];
-                            handles.Segment(segments).seg_filename = handles.seg_filename.String;
-                            handles.notoallFlag = 1;
-                    end
-                end
+                tot = length(find(~cellfun('isempty',strfind({handles.Segment.seg_filename}',handles.seg_filename.String))));
+                handles.seg_filename.String = [handles.seg_filename.String, '_', num2str(tot)];
+                handles.Segment(fs).seg_filename = handles.seg_filename.String;
             else
                 
             end
