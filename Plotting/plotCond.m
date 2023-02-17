@@ -51,8 +51,16 @@ end
 
 if keepCycParam
     load('CycleParams.mat');
+    if any(ismember({tempS.animal},'GiGi'))
+        imp = find(ismember({tempS.animal},'GiGi'));
+        for ii = imp
+            tempS(ii).animal = 'Gigi';
+        end
+        save('CycleParams.mat','tempS')
+    
+    end
     handles.params = tempS;
-    animal = unique({handles.params.animal});
+    animal = unique({handles.params.animal},'stable');
     AnimalsandEyes = [];
     for ii = 1:length(animal)
         ids2U = ismember({handles.params.animal},animal(ii));
@@ -597,7 +605,7 @@ else
         end
 
     end
-    animal = unique({handles.params.animal});
+    animal = unique({handles.params.animal},'stable');
     AnimalsandEyes = [];
     for ii = 1:length(animal)
         ids2U = ismember({handles.params.animal},animal(ii));
@@ -795,7 +803,11 @@ if ~keepCycParam
     save('CycleParams.mat','tempS')
 end
 tb=cell2table([{handles.params.animal}' { handles.params.eCombs}']);
-[tb,ia]=unique(tb);
+[tb,ia] = unique(tb,'stable');
+[~,mm] = sort(tb.Var2(:,1));
+tb.Var1 = tb.Var1(mm);
+tb.Var2(:,1) = tb.Var2(mm,1);
+tb.Var2(:,2) = tb.Var2(mm,2);
 temp = table2cell(tb);
 
 tpl = [];

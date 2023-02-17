@@ -51,6 +51,9 @@ end
 
 if keepCycParam
     load('CycleParams.mat');
+    if any(ismember({tempS.animal},'GiGi'))
+        
+    end
     handles.params = tempS;
     animal = unique({handles.params.animal});
     AnimalsandEyes = [];
@@ -116,9 +119,26 @@ else
             list(ii).name = FileOrder{ii};
         end
     else
-        list([list.bytes]<10000) = [];
+        list([list.bytes]==0) = [];
+        [cs,index] = sort_nat({list.name});
+        list = list(index);
+        list(contains({list.name},'.s2rx')) = [];
         [~,lInds] = sortrows({list.date}');
         list = list(lInds);
+        dts = [];
+        formatIn = 'yyyy_MMdd_HHmmss';
+        for iii = 1:length(list)
+            a = datetime(list(iii).name(1:16),'InputFormat',formatIn);
+            b = datetime([list(iii).name(1:10),'090000'],'InputFormat',formatIn);
+            if a<b
+                a = a+minutes(720);
+            end
+            dts = [dts;a];
+        end
+        if ~issorted(dts)
+            [~,sInds] = sortrows(dts);
+            list = list(sInds);
+        end
     end
     if appFlg
         handles.ProgressBar.Title.String = ['Checking File Names'];
@@ -182,9 +202,13 @@ else
         sl = find(dateT=='-');
         handles.params(allF).date = dateT(sl(2)+1:sl(3)-1);
         handles.params(allF).name = handles.listing(allF).name;
+        switch test.Results.segmentData.subj
+            case 'GiGi'
+                test.Results.segmentData.subj = 'Gigi';
+        end
         handles.params(allF).animal = test.Results.segmentData.subj;
         animal = handles.params(allF).animal;
-        elecByCanal = handles.(animal);
+%         elecByCanal = handles.(animal);
         if isfield(test.Results, 'segmentData')
             handles.params(allF).stim = test.Results.segmentData.stim;
             handles.params(allF).ref = test.Results.segmentData.refNum;
@@ -576,6 +600,17 @@ else
         end
 
     end
+    animal = unique({handles.params.animal});
+    AnimalsandEyes = [];
+    for ii = 1:length(animal)
+        ids2U = ismember({handles.params.animal},animal(ii));
+        if any(~isnan([handles.params(ids2U).meanMagL]))
+            AnimalsandEyes = [AnimalsandEyes {[animal{ii}(1),'-LEye']}];
+        end
+        if any(~isnan([handles.params(ids2U).meanMagR]))
+            AnimalsandEyes = [AnimalsandEyes {[animal{ii}(1),'-REye']}];
+        end
+    end
 
 
     if appFlg
@@ -693,14 +728,14 @@ else
     end
 end
 
-%Add code to check for duplicate data points
+%Code to check for duplicate data points
 if ~isfield(handles.params,'TOUSE') || ~keepCycParam
     handles.ProgressBar.Title.String = ['Checking For Duplicates'];
     handles.PBarObj.Position(3) = 0/length(handles.listing)*1000;
     handles.PBarTxt.String = 'Waiting';
     drawnow
     dupInd = [];
-    tp = struct('stim', {handles.params.stim}, 'ref', {handles.params.ref},...
+    tp = struct('animal', {handles.params.animal}, 'stim', {handles.params.stim}, 'ref', {handles.params.ref},...
         'p1d', {handles.params.p1d}, 'ipg', {handles.params.ipg},...
         'p2d', {handles.params.p2d}, 'p1amp', {handles.params.p1amp},...
         'p2amp', {handles.params.p2amp}, 'dSp2d', {handles.params.dSp2d});
@@ -769,15 +804,18 @@ temp = table2cell(tb);
 tpl = [];
 tpr = [];
 tph = [];
+handles.LARPCombs = [];
+handles.RALPCombs = [];
+handles.LHRHCombs = [];
 
 for o = 1:length(temp)
     handles.allCombs(o,1:2) = temp{o,2};
     toPlace = [num2str(temp{o,2}(1)),'-',num2str(temp{o,2}(2))];
     if appFlg
         switch temp{o,2}(1)
-            case num2cell(handles.elecByCanal.(temp{o,1}){1})
-                if isempty(handles.LARPCombs)
-                    handles.LARPCombs = [handles.LARPCombs; temp(o,2)];
+            case num2cell(handles.AnimalProperties.(temp{o,1}).elecByCanal{1})
+                if isempty(tpl)
+                    handles.LARPCombs = [handles.LARPCombs; temp(o,2)];%%%%
                     tpl = [tpl {toPlace}];
                 else
                     if ~any(cellfun(@(C) isequal(C, [temp{o,2}]), handles.LARPCombs))
@@ -785,8 +823,8 @@ for o = 1:length(temp)
                         tpl = [tpl {toPlace}];
                     end
                 end
-            case num2cell(handles.elecByCanal.(temp{o,1}){2})
-                if isempty(handles.RALPCombs)
+            case num2cell(handles.AnimalProperties.(temp{o,1}).elecByCanal{2})
+                if isempty(tpr)
                     handles.RALPCombs = [handles.RALPCombs; temp(o,2)];
                     tpr = [tpr {toPlace}];
                 else
@@ -795,8 +833,8 @@ for o = 1:length(temp)
                         tpr = [tpr {toPlace}];
                     end
                 end
-            case num2cell(handles.elecByCanal.(temp{o,1}){3})
-                if isempty(handles.LHRHCombs)
+            case num2cell(handles.AnimalProperties.(temp{o,1}).elecByCanal{3})
+                if isempty(tph)
                     handles.LHRHCombs = [handles.LHRHCombs; temp(o,2)];
                     tph = [tph {toPlace}];
                 else
@@ -825,19 +863,12 @@ end
 
 
 if appFlg
-    for i = animal
-        handels.AnimalsandEyesNodes.(i{1}) = uitreenode(handles.AnimalTree);
-        handels.AnimalsandEyesNodes.(i{1}).Text = i{1};
-        for find(contains(AnimalsandEyes,i{1}(1)))
-            handels.AnimalsandEyesNodes.(i{1}) = uitreenode(handels.AnimalsandEyesNodes.(i{1}));
-        handels.AnimalsandEyesNodes.(i{1}).Text = i{1};
-        end
-    end
     handles.animal = animal;
     handles.AnimalsandEyes = AnimalsandEyes;
+    handles.CreateAndEBtnGroups();
 %     handles.LEye = Leye;
 %     handles.REye = Reye;
-    handles.allStim = unique([handles.params.stim]);
+    handles.allStim = unique([handles.params.stim]);%%%%
     handles.allRef = unique([handles.params.ref]);
     handles.allP1d = unique([handles.params.p1d]);
     handles.allP2d = unique([handles.params.p2d]);
@@ -846,17 +877,17 @@ if appFlg
     handles.allIPG = unique([handles.params.ipg]);
     handles.normBy = normBy;
 
-    handles.AnimalEditField.Value = animal;
-    if Leye
-        handles.LeftEyeButton.BackgroundColor = 'g';
-    else
-        handles.LeftEyeButton.BackgroundColor = 'r';
-    end
-    if Reye
-        handles.RightEyeButton.BackgroundColor = 'g';
-    else
-        handles.RightEyeButton.BackgroundColor = 'r';
-    end
+%     handles.AnimalEditField.Value = animal;
+%     if Leye
+%         handles.LeftEyeButton.BackgroundColor = 'g';
+%     else
+%         handles.LeftEyeButton.BackgroundColor = 'r';
+%     end
+%     if Reye
+%         handles.RightEyeButton.BackgroundColor = 'g';
+%     else
+%         handles.RightEyeButton.BackgroundColor = 'r';
+%     end
 
     handles.LarpCombs.Items = [{'None'} tpl];
     handles.RalpCombs.Items = [{'None'} tpr];
