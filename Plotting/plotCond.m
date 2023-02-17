@@ -116,9 +116,26 @@ else
             list(ii).name = FileOrder{ii};
         end
     else
-        list([list.bytes]<10000) = [];
+        list([list.bytes]==0) = [];
+        [cs,index] = sort_nat({list.name});
+        list = list(index);
+        list(contains({list.name},'.s2rx')) = [];
         [~,lInds] = sortrows({list.date}');
         list = list(lInds);
+        dts = [];
+        formatIn = 'yyyy_MMdd_HHmmss';
+        for iii = 1:length(list)
+            a = datetime(list(iii).name(1:16),'InputFormat',formatIn);
+            b = datetime([list(iii).name(1:10),'090000'],'InputFormat',formatIn);
+            if a<b
+                a = a+minutes(720);
+            end
+            dts = [dts;a];
+        end
+        if ~issorted(dts)
+            [~,sInds] = sortrows(dts);
+            list = list(sInds);
+        end
     end
     if appFlg
         handles.ProgressBar.Title.String = ['Checking File Names'];
@@ -182,6 +199,10 @@ else
         sl = find(dateT=='-');
         handles.params(allF).date = dateT(sl(2)+1:sl(3)-1);
         handles.params(allF).name = handles.listing(allF).name;
+        switch test.Results.segmentData.subj
+            case 'GiGi'
+                test.Results.segmentData.subj = 'Gigi';
+        end
         handles.params(allF).animal = test.Results.segmentData.subj;
         animal = handles.params(allF).animal;
 %         elecByCanal = handles.(animal);

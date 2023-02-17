@@ -290,7 +290,10 @@ if (segments==0) || isempty(handles.segment_number.String)
         FileOrder = {handles.listing.name}';
         save([handles.raw_PathName,'\FileOrder.mat'],"FileOrder")
     else
-        reSort = 1;
+        [~,sInds] = sortrows(dts);
+        handles.listing = handles.listing(sInds);
+        FileOrder = {handles.listing.name}';
+        save([handles.raw_PathName,'\FileOrder.mat'],"FileOrder")
     end
     indsForSeg = 1:length(handles.listing);
     handles.totalSegment = length(indsForSeg);
