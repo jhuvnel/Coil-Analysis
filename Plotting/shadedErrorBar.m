@@ -76,6 +76,7 @@ params.CaseSensitive = false;
 params.addParameter('lineProps', '-k', @(x) ischar(x) | iscell(x));
 params.addParameter('transparent', true, @(x) islogical(x) || x==0 || x==1);
 params.addParameter('patchSaturation', 0.2, @(x) isnumeric(x) && x>=0 && x<=1);
+params.addParameter('Parent',[]);
 
 params.parse(varargin{:});
 
@@ -83,6 +84,7 @@ params.parse(varargin{:});
 lineProps =  params.Results.lineProps;
 transparent =  params.Results.transparent;
 patchSaturation = params.Results.patchSaturation;
+parent = params.Results.Parent;
 
 if ~iscell(lineProps), lineProps={lineProps}; end
 
@@ -120,10 +122,14 @@ end
 
 
 %Log the hold status so we don't change
-initialHoldStatus=ishold;
+if isempty(parent)
+    initialHoldStatus=ishold;
+else
+initialHoldStatus=ishold(parent);
+end
 if ~initialHoldStatus, hold on,  end
 
-H = makePlot(x,y,errBar,lineProps,transparent,patchSaturation);
+H = makePlot(x,y,errBar,lineProps,transparent,patchSaturation,parent);
 
 if ~initialHoldStatus, hold off, end
 
@@ -133,11 +139,15 @@ end
 
 
 
-function H = makePlot(x,y,errBar,lineProps,transparent,patchSaturation)
+function H = makePlot(x,y,errBar,lineProps,transparent,patchSaturation,parent)
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Plot to get the parameters of the line
-    H.mainLine=plot(x,y,lineProps{:});
+    if isempty(parent)
+        H.mainLine=plot(x,y,lineProps{:});
+    else
+        H.mainLine=plot(parent,x,y,lineProps{:});
+    end
 
 
     % Work out the color of the shaded region and associated lines.
@@ -173,10 +183,18 @@ function H = makePlot(x,y,errBar,lineProps,transparent,patchSaturation)
     yP(isnan(yP))=[];
 
 
-    if(isdatetime(x))
-        H.patch=patch(datenum(xP),yP,1);
+    if isempty(parent)
+        if(isdatetime(x))
+            H.patch=patch(datenum(xP),yP,1);
+        else
+            H.patch=patch(xP,yP,1);
+        end
     else
-        H.patch=patch(xP,yP,1);
+        if(isdatetime(x))
+            H.patch=patch(parent,datenum(xP),yP,1);
+        else
+            H.patch=patch(parent,xP,yP,1);
+        end
     end
 
     set(H.patch,'facecolor',patchColor, ...
@@ -184,9 +202,14 @@ function H = makePlot(x,y,errBar,lineProps,transparent,patchSaturation)
         'facealpha',faceAlpha)
 
 
-    %Make pretty edges around the patch. 
-    H.edge(1)=plot(x,lE,'-','color',edgeColor);
-    H.edge(2)=plot(x,uE,'-','color',edgeColor);
+    %Make pretty edges around the patch.
+    if isempty(parent)
+        H.edge(1)=plot(x,lE,'-','color',edgeColor);
+        H.edge(2)=plot(x,uE,'-','color',edgeColor);
+    else
+        H.edge(1)=plot(parent,x,lE,'-','color',edgeColor);
+        H.edge(2)=plot(parent,x,uE,'-','color',edgeColor);
+    end
 
 
 

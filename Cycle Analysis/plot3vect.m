@@ -1,4 +1,4 @@
-function handles=plot3vect(uuu,name,format,width)
+function handles=plot3vect(uuu,name,format,width,parent)
 
 %plot 3 vector  with tail at origin
 %expects
@@ -6,6 +6,6 @@ function handles=plot3vect(uuu,name,format,width)
 %   name=string
 %   format = plot format string (e.g., 'k:' for black dotted)
 
-handles=plot3([0 uuu(1)]',[0 uuu(2)]',[0 uuu(3)]');
+handles=plot3(parent,[0 uuu(1)]',[0 uuu(2)]',[0 uuu(3)]');
 set(handles,'LineWidth',width,'DisplayName',name,'Color',format)
 %text(uuu(1),uuu(2),uuu(3),name);

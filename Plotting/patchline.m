@@ -88,7 +88,7 @@ function p = patchline(xs,ys,varargin)
 %
 % See also: patch, line, plot
 
-[zs,PVs] = parseInputs(varargin{:});
+[zs,PVs,par] = parseInputs(varargin{:});
 if rem(numel(PVs),2) ~= 0
     % Odd number of inputs!
     error('patchline: Parameter-Values must be entered in valid pairs')
@@ -96,9 +96,17 @@ end
 
 % Facecolor = 'k' is (essentially) ignored here, but syntactically necessary
 if isempty(zs)
-    p = patch([xs(:);NaN],[ys(:);NaN],'k');
+    if ~isempty(par)
+        p = patch(par,[xs(:);NaN],[ys(:);NaN],'k');
+    else
+        p = patch([xs(:);NaN],[ys(:);NaN],'k');
+    end
 else
-    p = patch([xs(:);NaN],[ys(:);NaN],[zs(:);NaN],'k');
+    if ~isempty(par)
+        p = patch(par,[xs(:);NaN],[ys(:);NaN],[zs(:);NaN],'k');
+    else
+        p = patch([xs(:);NaN],[ys(:);NaN],[zs(:);NaN],'k');
+    end
 end
 
 % Apply PV pairs
@@ -109,11 +117,19 @@ if nargout == 0
     clear p
 end
 
-function [zs,PVs] = parseInputs(varargin)
+function [zs,PVs,par] = parseInputs(varargin)
+par = [];
 if isnumeric(varargin{1})
     zs = varargin{1};
     PVs = varargin(2:end);
 else
     PVs = varargin;
     zs = [];
+end
+for ipts = 1:length(varargin)
+    if ischar(varargin{ipts})
+        if ismember(varargin(ipts),'Parent')
+            par = varargin{ipts+1};
+        end
+    end
 end

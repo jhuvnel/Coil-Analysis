@@ -252,8 +252,10 @@ else
 
             if isfield(test.Results,'usedmaxMagL')
                 handles.params(allF).timeL = test.Results.segmentData.Time_Eye;
-                handles.params(allF).cycavgL = [test.Results.ll_cycavg' test.Results.lr_cycavg' test.Results.lz_cycavg'];
-                handles.params(allF).stdL = [test.Results.ll_cycstd' test.Results.lr_cycstd' test.Results.lz_cycstd'];
+                handles.params(allF).cyclesLRZXYL = [{test.Results.ll_cyc} {test.Results.lr_cyc} {test.Results.lz_cyc} {test.Results.lx_cyc} {test.Results.ly_cyc}];
+                handles.params(allF).cycavgLRZXYL = [test.Results.ll_cycavg; test.Results.lr_cycavg; test.Results.lz_cycavg; test.Results.lx_cycavg; test.Results.ly_cycavg];
+                handles.params(allF).cycstdLRZXYL = [test.Results.ll_cycstd; test.Results.lr_cycstd; test.Results.lz_cycstd; test.Results.lx_cycstd; test.Results.ly_cycstd];
+
                 handles.params(allF).MagL = test.Results.usedmaxMagL;
                 handles.params(allF).MisalignL = test.Results.usedMisalignL;
                 handles.params(allF).M3DL = test.Results.usedMisalign3DL;
@@ -270,8 +272,11 @@ else
                 handles.params(allF).meanM3DL = mean(handles.params(allF).M3DL);
                 handles.params(allF).plotM3DL = (rot*(handles.params(allF).meanM3DL/norm(handles.params(allF).meanM3DL))')';
                 if isfield(test.Results,'usedmaxMagL_NystagCorr')
-                    handles.params(allF).cycavgL_NystagCorr = [test.Results.ll_cycavg_NystagCorr' test.Results.lr_cycavg_NystagCorr' test.Results.lz_cycavg_NystagCorr'];
-                    handles.params(allF).stdL_NystagCorr = [test.Results.ll_cycstd_NystagCorr' test.Results.lr_cycstd_NystagCorr' test.Results.lz_cycstd_NystagCorr'];
+                    handles.params(allF).cyclesLRZXYL_NystagCorr = [{test.Results.ll_cyc_NystagCorr} {test.Results.lr_cyc_NystagCorr} {test.Results.lz_cyc_NystagCorr} {test.Results.lx_cyc_NystagCorr} {test.Results.ly_cyc_NystagCorr}];
+                    handles.params(allF).cycavgLRZXYL_NystagCorr = [test.Results.ll_cycavg_NystagCorr; test.Results.lr_cycavg_NystagCorr; test.Results.lz_cycavg_NystagCorr; test.Results.lx_cycavg_NystagCorr; test.Results.ly_cycavg_NystagCorr];
+                    handles.params(allF).cycstdLRZXYL_NystagCorr = [test.Results.ll_cycstd_NystagCorr; test.Results.lr_cycstd_NystagCorr; test.Results.lz_cycstd_NystagCorr; test.Results.lx_cycstd_NystagCorr; test.Results.ly_cycstd_NystagCorr];
+
+
                     handles.params(allF).MagL_NystagCorr = test.Results.usedmaxMagL_NystagCorr;
                     handles.params(allF).MisalignL_NystagCorr = test.Results.usedMisalignL_NystagCorr;
                     handles.params(allF).M3DL_NystagCorr = test.Results.usedMisalign3DL_NystagCorr;
@@ -287,6 +292,10 @@ else
                     handles.params(allF).stdMisalignL_NystagCorr = std(handles.params(allF).MisalignL_NystagCorr);
                     handles.params(allF).meanM3DL_NystagCorr = mean(handles.params(allF).M3DL_NystagCorr);
                     handles.params(allF).plotM3DL_NystagCorr = (rot*(handles.params(allF).meanM3DL_NystagCorr/norm(handles.params(allF).meanM3DL_NystagCorr))')';
+                    if isfield(test.Results,'usedCorrectionValsL')
+                        handles.params(allF).allCorrectionValsLRZXYL = test.Results.allCorrectionValsL;
+                        handles.params(allF).usedCorrectionValsLRZXYL = test.Results.usedCorrectionValsL;
+                    end
                 end
                 handles.params(allF).NystagCorr = 1;
                 if isempty(test.Results.usedmaxMagL)
@@ -296,8 +305,10 @@ else
                 end
             else
                 handles.params(allF).timeL = [];
-                handles.params(allF).cycavgL = [];
-                handles.params(allF).stdL = [];
+                handles.params(allF).cyclesLRZXYL = [];
+                handles.params(allF).cycavgLRZXYL = [];
+                handles.params(allF).cycstdLRZXYL = [];
+
                 handles.params(allF).MagL = [];
                 handles.params(allF).MisalignL = [];
                 handles.params(allF).M3DL = [];
@@ -308,8 +319,9 @@ else
                 handles.params(allF).meanM3DL = [];
                 handles.params(allF).plotM3DL = [];
 
-                handles.params(allF).cycavgL_NystagCorr = [];
-                handles.params(allF).stdL_NystagCorr = [];
+                handles.params(allF).cyclesLRZXYL_NystagCorr = [];
+                handles.params(allF).cycavgLRZXYL_NystagCorr = [];
+                handles.params(allF).cycstdLRZXYL_NystagCorr = [];
                 handles.params(allF).MagL_NystagCorr = [];
                 handles.params(allF).MisalignL_NystagCorr = [];
                 handles.params(allF).M3DL_NystagCorr = [];
@@ -319,14 +331,18 @@ else
                 handles.params(allF).stdMisalignL_NystagCorr = [];
                 handles.params(allF).meanM3DL_NystagCorr = [];
                 handles.params(allF).plotM3DL_NystagCorr = [];
+                handles.params(allF).allCorrectionValsLRZXYL = [];
+                handles.params(allF).usedCorrectionValsLRZXYL = [];
                 Leye = 0;
             end
 
             if isfield(test.Results,'usedmaxMagR')
                 handles.params(allF).timeR = test.Results.segmentData.Time_Eye;
 
-                handles.params(allF).cycavgR = [test.Results.rl_cycavg' test.Results.rr_cycavg' test.Results.rz_cycavg'];
-                handles.params(allF).stdR = [test.Results.rl_cycstd' test.Results.rr_cycstd' test.Results.rz_cycstd'];
+                handles.params(allF).cyclesLRZXYR = [{test.Results.rl_cyc} {test.Results.rr_cyc} {test.Results.rz_cyc} {test.Results.rx_cyc} {test.Results.ry_cyc}];
+                handles.params(allF).cycavgLRZXYR = [test.Results.rl_cycavg; test.Results.rr_cycavg; test.Results.rz_cycavg; test.Results.rx_cycavg; test.Results.ry_cycavg];
+                handles.params(allF).cycstdLRZXYR = [test.Results.rl_cycstd; test.Results.rr_cycstd; test.Results.rz_cycstd; test.Results.rx_cycstd; test.Results.ry_cycstd];
+
                 handles.params(allF).MagR = test.Results.usedmaxMagR;
                 handles.params(allF).MisalignR = test.Results.usedMisalignR;
                 handles.params(allF).M3DR = test.Results.usedMisalign3DR;
@@ -343,8 +359,9 @@ else
                 handles.params(allF).meanM3DR = mean(handles.params(allF).M3DR);
                 handles.params(allF).plotM3DR = (rot*(handles.params(allF).meanM3DR/norm(handles.params(allF).meanM3DR))')';
                 if isfield(test.Results,'usedmaxMagR_NystagCorr')
-                    handles.params(allF).cycavgR_NystagCorr = [test.Results.rl_cycavg_NystagCorr' test.Results.rr_cycavg_NystagCorr' test.Results.rz_cycavg_NystagCorr'];
-                    handles.params(allF).stdR_NystagCorr = [test.Results.rl_cycstd_NystagCorr' test.Results.rr_cycstd_NystagCorr' test.Results.rz_cycstd_NystagCorr'];
+                    handles.params(allF).cyclesLRZXYR_NystagCorr = [{test.Results.rl_cyc_NystagCorr} {test.Results.rr_cyc_NystagCorr} {test.Results.rz_cyc_NystagCorr} {test.Results.rx_cyc_NystagCorr} {test.Results.ry_cyc_NystagCorr}];
+                    handles.params(allF).cycavgLRZXYR_NystagCorr = [test.Results.rl_cycavg_NystagCorr; test.Results.rr_cycavg_NystagCorr; test.Results.rz_cycavg_NystagCorr; test.Results.rx_cycavg_NystagCorr; test.Results.ry_cycavg_NystagCorr];
+                    handles.params(allF).cycstdLRZXYR_NystagCorr = [test.Results.rl_cycstd_NystagCorr; test.Results.rr_cycstd_NystagCorr; test.Results.rz_cycstd_NystagCorr; test.Results.rx_cycstd_NystagCorr; test.Results.ry_cycstd_NystagCorr];
                     handles.params(allF).MagR_NystagCorr = test.Results.usedmaxMagR_NystagCorr;
                     handles.params(allF).MisalignR_NystagCorr = test.Results.usedMisalignR_NystagCorr;
                     handles.params(allF).M3DR_NystagCorr = test.Results.usedMisalign3DR_NystagCorr;
@@ -360,6 +377,10 @@ else
                     handles.params(allF).stdMisalignR_NystagCorr = std(handles.params(allF).MisalignR_NystagCorr);
                     handles.params(allF).meanM3DR_NystagCorr = mean(handles.params(allF).M3DR_NystagCorr);
                     handles.params(allF).plotM3DR_NystagCorr = (rot*(handles.params(allF).meanM3DR_NystagCorr/norm(handles.params(allF).meanM3DR_NystagCorr))')';
+                    if isfield(test.Results,'usedCorrectionValsR')
+                        handles.params(allF).allCorrectionValsLRZXYR = test.Results.allCorrectionValsR;
+                        handles.params(allF).usedCorrectionValsLRZXYR = test.Results.usedCorrectionValsR;
+                    end
                 end
                 handles.params(allF).NystagCorr = 1;
                 if isempty(test.Results.usedmaxMagR)
@@ -370,8 +391,9 @@ else
                 
             else
                 handles.params(allF).timeR = [];
-                handles.params(allF).cycavgR = [];               
-                handles.params(allF).stdR = [];
+                handles.params(allF).cyclesLRZXYR = [];
+                handles.params(allF).cycavgLRZXYR = [];
+                handles.params(allF).cycstdLRZXYR = [];
                 handles.params(allF).MagR = [];
                 handles.params(allF).MisalignR = [];
                 handles.params(allF).M3DR = [];
@@ -382,8 +404,9 @@ else
                 handles.params(allF).meanM3DR = [];
                 handles.params(allF).plotM3DR = [];
 
-                handles.params(allF).cycavgR_NystagCorr = [];               
-                handles.params(allF).stdR_NystagCorr = [];
+                handles.params(allF).cyclesLRZXYR_NystagCorr = [];
+                handles.params(allF).cycavgLRZXYR_NystagCorr = [];
+                handles.params(allF).cycstdLRZXYR_NystagCorr = [];
                 handles.params(allF).MagR_NystagCorr = [];
                 handles.params(allF).MisalignR_NystagCorr = [];
                 handles.params(allF).M3DR_NystagCorr = [];
@@ -393,6 +416,8 @@ else
                 handles.params(allF).stdMisalignR_NystagCorr = [];
                 handles.params(allF).meanM3DR_NystagCorr = [];
                 handles.params(allF).plotM3DR_NystagCorr = [];
+                handles.params(allF).allCorrectionValsLRZXYR = [];
+                handles.params(allF).usedCorrectionValsLRZXYR = [];
                 Reye = 0;
             end
 
@@ -748,7 +773,7 @@ if ~isfield(handles.params,'TOUSE') || ~keepCycParam
         handles.PBarObj.Position(3) = i/length(handles.params)*1000;
         handles.PBarTxt.String = [num2str(round(i/length(handles.params)*100)),'%'];
         drawnow
-        for j = 1:length(handles.params)
+        for j = i:length(handles.params)
             if j~=i
                 if isequal(tp(i),tp(j))
                     if isempty(dupInd)

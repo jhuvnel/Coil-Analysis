@@ -1396,7 +1396,7 @@ handles.segment.filtFlag = 1;
 % end
 
 
-
+warning('on','verbose')
 handles.segment.LE_LARP_Filt = filtfilt(ones(1,handles.tofilt)/handles.tofilt,1,handles.segment.LE_LARP);
 handles.segment.LE_Z_Filt = filtfilt(ones(1,handles.tofilt)/handles.tofilt,1,handles.segment.LE_Z);
 handles.segment.LE_RALP_Filt = filtfilt(ones(1,handles.tofilt)/handles.tofilt,1,handles.segment.LE_RALP);
@@ -1407,6 +1407,10 @@ handles.segment.RE_Z_Filt = filtfilt(ones(1,handles.tofilt)/handles.tofilt,1,han
 handles.segment.RE_RALP_Filt = filtfilt(ones(1,handles.tofilt)/handles.tofilt,1,handles.segment.RE_RALP);
 handles.segment.RE_X_Filt = filtfilt(ones(1,handles.tofilt)/handles.tofilt,1,handles.segment.RE_X);
 handles.segment.RE_Y_Filt = filtfilt(ones(1,handles.tofilt)/handles.tofilt,1,handles.segment.RE_Y);
+[msg,warnID] = lastwarn;
+if ~contains({warnID},'Save')
+    sh = 1;
+end
 handles = correction(handles);
 handles = plotVel(handles);
 end
@@ -1866,7 +1870,7 @@ if handles.RegVChange
 
             else
                 l = min(diff(handles.segment.stim_inds));
-                bound = [handles.segment.stim_inds(processing):handles.segment.stim_inds(processing)+l-50];
+                bound = [handles.segment.stim_inds(processing):handles.segment.stim_inds(processing)+l];
                 if bound(end)>length(handles.RootData(handles.segNum).VOMA_data.Data_LE_Vel_LARP)
                     bound=bound(1):1:length(handles.RootData(handles.segNum).VOMA_data.Data_LE_Vel_LARP);
                 end
@@ -1900,7 +1904,7 @@ if handles.RegVChange
 
             else
                 l = min(diff(handles.segment.stim_inds));
-                bound = [handles.segment.stim_inds(processing):handles.segment.stim_inds(processing)+l-50];
+                bound = [handles.segment.stim_inds(processing):handles.segment.stim_inds(processing)+l];
                 if handles.filtFlag
                     handles.Results.ll_cyc = [handles.Results.ll_cyc; handles.segment.LE_LARP_Filt(bound)'];
                     handles.Results.lr_cyc = [handles.Results.lr_cyc; handles.segment.LE_RALP_Filt(bound)'];
@@ -2023,7 +2027,7 @@ if handles.NystagVChange
 
             else
                 l = min(diff(handles.segment.stim_inds));
-                bound = [handles.segment.stim_inds(processing):handles.segment.stim_inds(processing)+l-50];
+                bound = [handles.segment.stim_inds(processing):handles.segment.stim_inds(processing)+l];
                 if handles.filtFlag
                     handles.Results.ll_cyc_NystagCorr = [handles.Results.ll_cyc_NystagCorr; handles.segment.LE_LARP_NystagCorr_Filt(bound)'];
                     handles.Results.lr_cyc_NystagCorr = [handles.Results.lr_cyc_NystagCorr; handles.segment.LE_RALP_NystagCorr_Filt(bound)'];
@@ -2090,7 +2094,7 @@ if handles.RegVChange
     cyc2Use = handles.cycle_list.UserData;
     if handles.LEye.Value
         p.ll = shadedErrorBar([1:length(handles.Results.ll_cycavg)]/handles.Results.Fs,handles.Results.ll_cycavg,...
-            handles.Results.ll_cycstd,'lineprops',{'r-','MarkerFaceColor',handles.color.l_l});
+            handles.Results.ll_cycstd,'lineprops',{'r-','MarkerFaceColor',handles.color.l_l},'Parent',handles.cycavg);
         set(p.ll.edge,'LineWidth',1.5,'color',handles.color.l_l)
         set(p.ll.patch,'facecolor',handles.color.l_l)
         set(p.ll.mainLine,'LineWidth',2.5,'color',handles.color.l_l)
@@ -2099,7 +2103,7 @@ if handles.RegVChange
 
 
         p.lr = shadedErrorBar([1:length(handles.Results.lr_cycavg)]/handles.Results.Fs,handles.Results.lr_cycavg,...
-            handles.Results.lr_cycstd,'lineprops',{'r-','MarkerFaceColor',handles.color.l_r});
+            handles.Results.lr_cycstd,'lineprops',{'r-','MarkerFaceColor',handles.color.l_r},'Parent',handles.cycavg);
         set(p.lr.edge,'LineWidth',1.5,'color',handles.color.l_r)
         set(p.lr.patch,'facecolor',handles.color.l_r)
         set(p.lr.mainLine,'LineWidth',2.5,'color',handles.color.l_r)
@@ -2107,7 +2111,7 @@ if handles.RegVChange
         set(p.lr.mainLine,'LineStyle',lstyle)
 
         p.lz = shadedErrorBar([1:length(handles.Results.lz_cycavg)]/handles.Results.Fs,handles.Results.lz_cycavg,...
-            handles.Results.lz_cycstd,'lineprops',{'r-','MarkerFaceColor',handles.color.l_z});
+            handles.Results.lz_cycstd,'lineprops',{'r-','MarkerFaceColor',handles.color.l_z},'Parent',handles.cycavg);
         set(p.lz.edge,'LineWidth',1.5,'color',handles.color.l_z)
         set(p.lz.patch,'facecolor',handles.color.l_z)
         set(p.lz.mainLine,'LineWidth',2.5,'color',handles.color.l_z)
@@ -2150,7 +2154,7 @@ if handles.RegVChange
     end
     if handles.REye.Value
         p.rl = shadedErrorBar([1:length(handles.Results.rl_cycavg)]/handles.Results.Fs,handles.Results.rl_cycavg,...
-            handles.Results.rl_cycstd,'lineprops',{'r-','MarkerFaceColor',handles.color.r_l});
+            handles.Results.rl_cycstd,'lineprops',{'r-','MarkerFaceColor',handles.color.r_l},'Parent',handles.cycavg);
         set(p.rl.edge,'LineWidth',1.5,'color',handles.color.r_l)
         set(p.rl.patch,'facecolor',handles.color.r_l)
         set(p.rl.mainLine,'LineWidth',2.5,'color',handles.color.r_l)
@@ -2158,7 +2162,7 @@ if handles.RegVChange
         set(p.rl.mainLine,'LineStyle',lstyle)
 
         p.rr = shadedErrorBar([1:length(handles.Results.rr_cycavg)]/handles.Results.Fs,handles.Results.rr_cycavg,...
-            handles.Results.rr_cycstd,'lineprops',{'r-','MarkerFaceColor',handles.color.r_r});
+            handles.Results.rr_cycstd,'lineprops',{'r-','MarkerFaceColor',handles.color.r_r},'Parent',handles.cycavg);
         set(p.rr.edge,'LineWidth',1.5,'color',handles.color.r_r)
         set(p.rr.patch,'facecolor',handles.color.r_r)
         set(p.rr.mainLine,'LineWidth',2.5,'color',handles.color.r_r)
@@ -2166,7 +2170,7 @@ if handles.RegVChange
         set(p.rr.mainLine,'LineStyle',lstyle)
 
         p.rz = shadedErrorBar([1:length(handles.Results.rz_cycavg)]/handles.Results.Fs,handles.Results.rz_cycavg,...
-            handles.Results.rz_cycstd,'lineprops',{'r-','MarkerFaceColor',handles.color.r_z});
+            handles.Results.rz_cycstd,'lineprops',{'r-','MarkerFaceColor',handles.color.r_z},'Parent',handles.cycavg);
         set(p.rz.edge,'LineWidth',1.5,'color',handles.color.r_z)
         set(p.rz.patch,'facecolor',handles.color.r_z)
         set(p.rz.mainLine,'LineWidth',2.5,'color',handles.color.r_z)
@@ -2253,7 +2257,7 @@ if handles.NystagVChange
     cyc2Use = handles.cycle_list_Nystag.UserData;
     if handles.LEye.Value
         p.ll = shadedErrorBar([1:length(handles.Results.ll_cycavg_NystagCorr)]/handles.Results.Fs,handles.Results.ll_cycavg_NystagCorr,...
-            handles.Results.ll_cycstd_NystagCorr,'lineprops',{'r-','MarkerFaceColor',handles.color.l_l});
+            handles.Results.ll_cycstd_NystagCorr,'lineprops',{'r-','MarkerFaceColor',handles.color.l_l},'parent',handles.cycavg_Nystag);
         set(p.ll.edge,'LineWidth',1.5,'color',handles.color.l_l)
         set(p.ll.patch,'facecolor',handles.color.l_l)
         set(p.ll.mainLine,'LineWidth',2.5,'color',handles.color.l_l)
@@ -2262,7 +2266,7 @@ if handles.NystagVChange
 
 
         p.lr = shadedErrorBar([1:length(handles.Results.lr_cycavg_NystagCorr)]/handles.Results.Fs,handles.Results.lr_cycavg_NystagCorr,...
-            handles.Results.lr_cycstd_NystagCorr,'lineprops',{'r-','MarkerFaceColor',handles.color.l_r});
+            handles.Results.lr_cycstd_NystagCorr,'lineprops',{'r-','MarkerFaceColor',handles.color.l_r},'parent',handles.cycavg_Nystag);
         set(p.lr.edge,'LineWidth',1.5,'color',handles.color.l_r)
         set(p.lr.patch,'facecolor',handles.color.l_r)
         set(p.lr.mainLine,'LineWidth',2.5,'color',handles.color.l_r)
@@ -2270,7 +2274,7 @@ if handles.NystagVChange
         set(p.lr.mainLine,'LineStyle',lstyle)
 
         p.lz = shadedErrorBar([1:length(handles.Results.lz_cycavg_NystagCorr)]/handles.Results.Fs,handles.Results.lz_cycavg_NystagCorr,...
-            handles.Results.lz_cycstd_NystagCorr,'lineprops',{'r-','MarkerFaceColor',handles.color.l_z});
+            handles.Results.lz_cycstd_NystagCorr,'lineprops',{'r-','MarkerFaceColor',handles.color.l_z},'parent',handles.cycavg_Nystag);
         set(p.lz.edge,'LineWidth',1.5,'color',handles.color.l_z)
         set(p.lz.patch,'facecolor',handles.color.l_z)
         set(p.lz.mainLine,'LineWidth',2.5,'color',handles.color.l_z)
@@ -2315,7 +2319,7 @@ if handles.NystagVChange
 
     if handles.REye.Value
         p.rl = shadedErrorBar([1:length(handles.Results.rl_cycavg_NystagCorr)]/handles.Results.Fs,handles.Results.rl_cycavg_NystagCorr,...
-            handles.Results.rl_cycstd_NystagCorr,'lineprops',{'r-','MarkerFaceColor',handles.color.r_l});
+            handles.Results.rl_cycstd_NystagCorr,'lineprops',{'r-','MarkerFaceColor',handles.color.r_l},'parent',handles.cycavg_Nystag);
         set(p.rl.edge,'LineWidth',1.5,'color',handles.color.r_l)
         set(p.rl.patch,'facecolor',handles.color.r_l)
         set(p.rl.mainLine,'LineWidth',2.5,'color',handles.color.r_l)
@@ -2323,7 +2327,7 @@ if handles.NystagVChange
         set(p.rl.mainLine,'LineStyle',lstyle)
 
         p.rr = shadedErrorBar([1:length(handles.Results.rr_cycavg_NystagCorr)]/handles.Results.Fs,handles.Results.rr_cycavg_NystagCorr,...
-            handles.Results.rr_cycstd_NystagCorr,'lineprops',{'r-','MarkerFaceColor',handles.color.r_r});
+            handles.Results.rr_cycstd_NystagCorr,'lineprops',{'r-','MarkerFaceColor',handles.color.r_r},'parent',handles.cycavg_Nystag);
         set(p.rr.edge,'LineWidth',1.5,'color',handles.color.r_r)
         set(p.rr.patch,'facecolor',handles.color.r_r)
         set(p.rr.mainLine,'LineWidth',2.5,'color',handles.color.r_r)
@@ -2331,7 +2335,7 @@ if handles.NystagVChange
         set(p.rr.mainLine,'LineStyle',lstyle)
 
         p.rz = shadedErrorBar([1:length(handles.Results.rz_cycavg_NystagCorr)]/handles.Results.Fs,handles.Results.rz_cycavg_NystagCorr,...
-            handles.Results.rz_cycstd_NystagCorr,'lineprops',{'r-','MarkerFaceColor',handles.color.r_z});
+            handles.Results.rz_cycstd_NystagCorr,'lineprops',{'r-','MarkerFaceColor',handles.color.r_z},'parent',handles.cycavg_Nystag);
         set(p.rz.edge,'LineWidth',1.5,'color',handles.color.r_z)
         set(p.rz.patch,'facecolor',handles.color.r_z)
         set(p.rz.mainLine,'LineWidth',2.5,'color',handles.color.r_z)
@@ -2491,6 +2495,9 @@ function handles = correction(handles)
         handles.segment.RE_X_NystagCorr_Filt = handles.segment.RE_X_Filt;
         handles.segment.RE_Y_NystagCorr_Filt = handles.segment.RE_Y_Filt;
 
+        handles.segment.CorrectionValsL = [];
+        handles.segment.CorrectionValsR = [];
+
         handles.segment.LE_LARP_NystagCorr = handles.segment.LE_LARP;
         handles.segment.LE_RALP_NystagCorr = handles.segment.LE_RALP;
         handles.segment.LE_Z_NystagCorr = handles.segment.LE_Z;
@@ -2554,17 +2561,21 @@ function handles = correction(handles)
             else
                 bndR = imagR-20:imagR;
             end
-            handles.segment.LE_LARP_NystagCorr_Filt(ind-1:ind+100) = handles.segment.LE_LARP_Filt(ind-1:ind+100)-mean(preL(bndL));
-            handles.segment.LE_RALP_NystagCorr_Filt(ind-1:ind+100) = handles.segment.LE_RALP_Filt(ind-1:ind+100)-mean(preR(bndL));
-            handles.segment.LE_Z_NystagCorr_Filt(ind-1:ind+100) = handles.segment.LE_Z_Filt(ind-1:ind+100)-mean(preZ(bndL));
-            handles.segment.LE_X_NystagCorr_Filt(ind-1:ind+100) = handles.segment.LE_X_Filt(ind-1:ind+100)-mean(preX(bndL));
-            handles.segment.LE_Y_NystagCorr_Filt(ind-1:ind+100) = handles.segment.LE_Y_Filt(ind-1:ind+100)-mean(preY(bndL));
+
+            handles.segment.CorrectionValsL = [handles.segment.CorrectionValsL; mean(preL(bndL)) mean(preR(bndL)) mean(preZ(bndL)) mean(preX(bndL)) mean(preY(bndL))];
+            handles.segment.CorrectionValsR = [handles.segment.CorrectionValsR; mean(preRL(bndR)) mean(preRR(bndR)) mean(preRZ(bndR)) mean(preRX(bndR)) mean(preRY(bndR))];
+
+            handles.segment.LE_LARP_NystagCorr_Filt(ind-1:ind+500) = handles.segment.LE_LARP_Filt(ind-1:ind+500)-mean(preL(bndL));
+            handles.segment.LE_RALP_NystagCorr_Filt(ind-1:ind+500) = handles.segment.LE_RALP_Filt(ind-1:ind+500)-mean(preR(bndL));
+            handles.segment.LE_Z_NystagCorr_Filt(ind-1:ind+500) = handles.segment.LE_Z_Filt(ind-1:ind+500)-mean(preZ(bndL));
+            handles.segment.LE_X_NystagCorr_Filt(ind-1:ind+500) = handles.segment.LE_X_Filt(ind-1:ind+500)-mean(preX(bndL));
+            handles.segment.LE_Y_NystagCorr_Filt(ind-1:ind+500) = handles.segment.LE_Y_Filt(ind-1:ind+500)-mean(preY(bndL));
             
-            handles.segment.RE_LARP_NystagCorr_Filt(ind-1:ind+100) = handles.segment.RE_LARP_Filt(ind-1:ind+100)-mean(preRL(bndR));
-            handles.segment.RE_RALP_NystagCorr_Filt(ind-1:ind+100) = handles.segment.RE_RALP_Filt(ind-1:ind+100)-mean(preRR(bndR));
-            handles.segment.RE_Z_NystagCorr_Filt(ind-1:ind+100) = handles.segment.RE_Z_Filt(ind-1:ind+100)-mean(preRZ(bndR));
-            handles.segment.RE_X_NystagCorr_Filt(ind-1:ind+100) = handles.segment.RE_X_Filt(ind-1:ind+100)-mean(preRX(bndR));
-            handles.segment.RE_Y_NystagCorr_Filt(ind-1:ind+100) = handles.segment.RE_Y_Filt(ind-1:ind+100)-mean(preRY(bndR));
+            handles.segment.RE_LARP_NystagCorr_Filt(ind-1:ind+500) = handles.segment.RE_LARP_Filt(ind-1:ind+500)-mean(preRL(bndR));
+            handles.segment.RE_RALP_NystagCorr_Filt(ind-1:ind+500) = handles.segment.RE_RALP_Filt(ind-1:ind+500)-mean(preRR(bndR));
+            handles.segment.RE_Z_NystagCorr_Filt(ind-1:ind+500) = handles.segment.RE_Z_Filt(ind-1:ind+500)-mean(preRZ(bndR));
+            handles.segment.RE_X_NystagCorr_Filt(ind-1:ind+500) = handles.segment.RE_X_Filt(ind-1:ind+500)-mean(preRX(bndR));
+            handles.segment.RE_Y_NystagCorr_Filt(ind-1:ind+500) = handles.segment.RE_Y_Filt(ind-1:ind+500)-mean(preRY(bndR));
 
 
             ind = handles.segment.stim_inds(i);
@@ -2618,17 +2629,17 @@ function handles = correction(handles)
             else
                 bndR = imagR-20:imagR;
             end
-            handles.segment.LE_LARP_NystagCorr(ind-1:ind+100) = handles.segment.LE_LARP(ind-1:ind+100)-mean(preL(bndL));
-            handles.segment.LE_RALP_NystagCorr(ind-1:ind+100) = handles.segment.LE_RALP(ind-1:ind+100)-mean(preR(bndL));
-            handles.segment.LE_Z_NystagCorr(ind-1:ind+100) = handles.segment.LE_Z(ind-1:ind+100)-mean(preZ(bndL));
-            handles.segment.LE_X_NystagCorr(ind-1:ind+100) = handles.segment.LE_X(ind-1:ind+100)-mean(preX(bndL));
-            handles.segment.LE_Y_NystagCorr(ind-1:ind+100) = handles.segment.LE_Y(ind-1:ind+100)-mean(preY(bndL));
+            handles.segment.LE_LARP_NystagCorr(ind-1:ind+500) = handles.segment.LE_LARP(ind-1:ind+500)-mean(preL(bndL));
+            handles.segment.LE_RALP_NystagCorr(ind-1:ind+500) = handles.segment.LE_RALP(ind-1:ind+500)-mean(preR(bndL));
+            handles.segment.LE_Z_NystagCorr(ind-1:ind+500) = handles.segment.LE_Z(ind-1:ind+500)-mean(preZ(bndL));
+            handles.segment.LE_X_NystagCorr(ind-1:ind+500) = handles.segment.LE_X(ind-1:ind+500)-mean(preX(bndL));
+            handles.segment.LE_Y_NystagCorr(ind-1:ind+500) = handles.segment.LE_Y(ind-1:ind+500)-mean(preY(bndL));
             
-            handles.segment.RE_LARP_NystagCorr(ind-1:ind+100) = handles.segment.RE_LARP(ind-1:ind+100)-mean(preRL(bndR));
-            handles.segment.RE_RALP_NystagCorr(ind-1:ind+100) = handles.segment.RE_RALP(ind-1:ind+100)-mean(preRR(bndR));
-            handles.segment.RE_Z_NystagCorr(ind-1:ind+100) = handles.segment.RE_Z(ind-1:ind+100)-mean(preRZ(bndR));
-            handles.segment.RE_X_NystagCorr(ind-1:ind+100) = handles.segment.RE_X(ind-1:ind+100)-mean(preRX(bndR));
-            handles.segment.RE_Y_NystagCorr(ind-1:ind+100) = handles.segment.RE_Y(ind-1:ind+100)-mean(preRY(bndR));
+            handles.segment.RE_LARP_NystagCorr(ind-1:ind+500) = handles.segment.RE_LARP(ind-1:ind+500)-mean(preRL(bndR));
+            handles.segment.RE_RALP_NystagCorr(ind-1:ind+500) = handles.segment.RE_RALP(ind-1:ind+500)-mean(preRR(bndR));
+            handles.segment.RE_Z_NystagCorr(ind-1:ind+500) = handles.segment.RE_Z(ind-1:ind+500)-mean(preRZ(bndR));
+            handles.segment.RE_X_NystagCorr(ind-1:ind+500) = handles.segment.RE_X(ind-1:ind+500)-mean(preRX(bndR));
+            handles.segment.RE_Y_NystagCorr(ind-1:ind+500) = handles.segment.RE_Y(ind-1:ind+500)-mean(preRY(bndR));
     end
 end
 
@@ -2799,6 +2810,37 @@ else
         end
     end
 end
+Results.ProcessedData.LEp_X = handles.segment.LEp_X;
+Results.ProcessedData.LEp_Y = handles.segment.LEp_Y;
+Results.ProcessedData.LEp_Z = handles.segment.LEp_Z;
+Results.ProcessedData.REp_X = handles.segment.REp_X;
+Results.ProcessedData.REp_Y = handles.segment.REp_Y;
+Results.ProcessedData.REp_Z = handles.segment.REp_Z;
+
+Results.ProcessedData.LEv_LARP = handles.segment.LE_LARP_Filt;
+Results.ProcessedData.LEv_RALP = handles.segment.LE_RALP_Filt;
+Results.ProcessedData.LEv_Z = handles.segment.LE_Z_Filt;
+Results.ProcessedData.LEv_X = handles.segment.LE_X_Filt;
+Results.ProcessedData.LEv_Y = handles.segment.LE_Y_Filt;
+
+Results.ProcessedData.REv_LARP = handles.segment.RE_LARP_Filt;
+Results.ProcessedData.REv_RALP = handles.segment.RE_RALP_Filt;
+Results.ProcessedData.REv_Z = handles.segment.RE_Z_Filt;
+Results.ProcessedData.REv_X = handles.segment.RE_X_Filt;
+Results.ProcessedData.REv_Y = handles.segment.RE_Y_Filt;
+
+Results.ProcessedData.LEv_LARP_NystagCorr = handles.segment.LE_LARP_NystagCorr_Filt;
+Results.ProcessedData.LEv_RALP_NystagCorr = handles.segment.LE_RALP_NystagCorr_Filt;
+Results.ProcessedData.LEv_Z_NystagCorr = handles.segment.LE_Z_NystagCorr_Filt;
+Results.ProcessedData.LEv_X_NystagCorr = handles.segment.LE_X_NystagCorr_Filt;
+Results.ProcessedData.LEv_Y_NystagCorr = handles.segment.LE_Y_NystagCorr_Filt;
+
+Results.ProcessedData.REv_LARP_NystagCorr = handles.segment.RE_LARP_NystagCorr_Filt;
+Results.ProcessedData.REv_RALP_NystagCorr = handles.segment.RE_RALP_NystagCorr_Filt;
+Results.ProcessedData.REv_Z_NystagCorr = handles.segment.RE_Z_NystagCorr_Filt;
+Results.ProcessedData.REv_X_NystagCorr = handles.segment.RE_X_NystagCorr_Filt;
+Results.ProcessedData.REv_Y_NystagCorr = handles.segment.RE_Y_NystagCorr_Filt;
+
 Results.NystagCorr = handles.nystagCorr.Value;
 
 usedInd = handles.cycle_list.UserData;
@@ -2821,6 +2863,9 @@ if handles.LEye.Value
     Results.usedMisalignL_NystagCorr = handles.segment.MisalignL_NystagCorr(usedIndN);
     Results.allmaxMagL_NystagCorr = handles.segment.maxMagL_NystagCorr;
     Results.usedmaxMagL_NystagCorr = handles.segment.maxMagL_NystagCorr(usedIndN);
+
+    Results.allCorrectionValsL = handles.segment.CorrectionValsL;
+    Results.usedCorrectionValsL = handles.segment.CorrectionValsL(usedIndN,:);
 else
     Results.allpullIndsL = [];
     Results.usedpullIndsL = [];
@@ -2839,6 +2884,9 @@ else
     Results.usedMisalignL_NystagCorr = [];
     Results.allmaxMagL_NystagCorr = [];
     Results.usedmaxMagL_NystagCorr = [];
+
+    Results.allCorrectionValsL = [];
+    Results.usedCorrectionValsL = [];
 end
 if handles.REye.Value
     Results.allpullIndsR = handles.segment.pullIndsR;
@@ -2858,6 +2906,9 @@ if handles.REye.Value
     Results.usedMisalignR_NystagCorr = handles.segment.MisalignR_NystagCorr(usedIndN);
     Results.allmaxMagR_NystagCorr = handles.segment.maxMagR_NystagCorr;
     Results.usedmaxMagR_NystagCorr = handles.segment.maxMagR_NystagCorr(usedIndN);
+
+    Results.allCorrectionValsR = handles.segment.CorrectionValsR;
+    Results.usedCorrectionValsR = handles.segment.CorrectionValsR(usedIndN,:);
 else
     Results.allpullIndsR = [];
     Results.usedpullIndsR = [];
@@ -2876,6 +2927,9 @@ else
     Results.usedMisalignR_NystagCorr = [];
     Results.allmaxMagR_NystagCorr = [];
     Results.usedmaxMagR_NystagCorr = [];
+
+    Results.allCorrectionValsR = [];
+    Results.usedCorrectionValsR = [];
 end
 Results.stim_inds = handles.segment.stim_inds;
 Results.cycNum = usedInd;

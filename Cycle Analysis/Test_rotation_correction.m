@@ -11,6 +11,50 @@ LL = load('R:\Morris, Brian\Monkey Data\GiGi\20191206\cycles\GiGi-NA-20191206-El
 LR = load('R:\Morris, Brian\Monkey Data\GiGi\20191206\cycles\GiGi-NA-20191206-ElectricalStim-PulseTrains-RALP-stim3ref11-200pps-phase1Dur200-phase2Dur200-IPG0-phase1Amp250-phase2Amp250_CycleAvg.mat');
 LZ = load('R:\Morris, Brian\Monkey Data\GiGi\20191206\cycles\GiGi-NA-20191206-ElectricalStim-PulseTrains-LHRH-stim8ref11-200pps-phase1Dur200-phase2Dur200-IPG0-phase1Amp250-phase2Amp250_CycleAvg.mat');
 %%
+H_Gigi_ringXYZ_re_G = ... % note the apostrophe to transpose rows to columns; re_G means re image system coords
+ [-0.207131	 0.978284	-0.00756488; % +X yellow Gigi head ring X (unlike Nancy CT)
+   -0.967023	 -0.205906	 -0.149897;   %+Y (neated from A green in ARS coords) for Gigi head ring Y
+  -0.148199	-0.0237328	 0.988673]'; % red for Gigi head ring Z
+%H = H_Gigi_ringXYZ_re_G
+C_Gigi_leftcanalLRZ_re_G = ... % note the apostrophe to transpose rows to columns; re_G mean re image system coords
+ [ 0.676684	0.734721	 0.0477903; % green +LA
+  -0.726268	0.676745	-0.120628;  % yellow +LP
+  -0.12097	0.0469186	 0.991547]';% red +Z
+%C=C_Gigi_leftcanalLRZ_re_G
+
+H_Nancy_ringXYZ_re_G = ... % note the apostrophe to transpose rows to columns; re_G means re image system gantry coords
+  [-0.0196192	0.999762	-0.00953597;
+   -0.999273	 -0.0192961	 0.03287;
+    0.0326782	0.0101739	 0.999414]'; % transposed for consistency with C:\Users\cdell\OneDrive - Johns Hopkins\VNEL1DRV\Manuscripts-VNEL1DRV\Morris1-StimRefPosn\  3DSlicerAnalaysisForeeVORCanalVsFieldCoilAlignment.xlsx
+
+C_Nancy_leftcanalLRZ_re_G = ... % note the apostrophe to transpose rows to columns; re_G means re image system gantry coords
+  [ 0.73676	  0.608407	-0.295002;
+   -0.664495	0.732182	-0.149518;
+    0.125028	0.306186	 0.943726]';
+
+H_Opal_ringXYZ_re_G = ... % note the apostrophe to transpose rows to columns; re_G means re image system gantry coords
+  [-0.950912	 0.294825   0.0940482;
+   -0.2935    -0.955551   0.027941;
+    0.0981056	-0.0010337	0.995175]';
+  
+C_Opal_leftcanalLRZ_re_G = ... % note the apostrophe to transpose rows to columns; re_G means re image system gantry coords  
+  [ -0.573072	 0.818776	-0.0345426;
+    -0.809681	-0.559193	 0.178101;
+     0.126509	 0.130033	 0.983406]';
+ 
+%P_CLRZfromFXYZ = inv(C)*H
+%P_CLRZfromFXYZ = C\H % x = A\b is computed differently than x = inv(A)*b and is recommended for solving systems of linear equations
+%P_CLRZfromFLRZ = P_CLRZfromFXYZ*rotZ3deg(-45)
+
+P_CLRZfromFXYZ_Gigi = C_Gigi_leftcanalLRZ_re_G\H_Gigi_ringXYZ_re_G; 
+P_CLRZfromFLRZ_Gigi = P_CLRZfromFXYZ_Gigi*rotZ3deg(-45);
+
+P_CLRZfromFXYZ_Nancy = C_Nancy_leftcanalLRZ_re_G\H_Nancy_ringXYZ_re_G;
+P_CLRZfromFLRZ_Nancy = P_CLRZfromFXYZ_Nancy*rotZ3deg(-45);
+
+P_CLRZfromFXYZ_Opal = C_Opal_leftcanalLRZ_re_G\H_Opal_ringXYZ_re_G; 
+P_CLRZfromFLRZ_Opal = P_CLRZfromFXYZ_Opal*rotZ3deg(-45);
+%%
 x =filtfilt(ones(1,7)/7,1,RR.Results.segmentData.RE_Velocity_X);
 y =filtfilt(ones(1,7)/7,1,RR.Results.segmentData.RE_Velocity_Y);
 z =filtfilt(ones(1,7)/7,1,RR.Results.segmentData.RE_Velocity_Z);
@@ -173,7 +217,6 @@ h=plot3vect([0;0;-1],'Yaw Axis',[1 0 0],2);
 set(h,'LineStyle','--','Marker','o');
 
 
-
 [x,y,z]=sphere();
 h=surf(0.5*x,0.5*y,0.5*z);
 set(h,'FaceColor','white')
@@ -184,7 +227,7 @@ box on;
 xlim([-1 1])
 ylim([-1 1])
 zlim([-1 1])
-
+%%
 VN = vecnorm(LRZR,2,2);
 for i = 1:length(RR.Results.usedpullIndsR_NystagCorr)
     lPlotLD = plot3([0 LRZR(i,1)/VN(i)]',[0 LRZR(i,2)/VN(i)]',[0 LRZR(i,3)/VN(i)]');
