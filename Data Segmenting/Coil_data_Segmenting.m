@@ -269,7 +269,7 @@ if (segments==0) || isempty(handles.segment_number.String)
     % Get list of all coil files and sort chronologically, use number
     % of coil files as iterations for for loop
     handles.listing = dir(handles.raw_name.String);
-    handles.listing(~contains({handles.listing.name},{'LP','LH','LA'})) = [];
+    handles.listing(~contains({handles.listing.name},{'LP','LH','LA','CCBP'})) = [];
     handles.listing([handles.listing.bytes]==0) = [];
     [cs,index] = sort_nat({handles.listing.name});
     handles.listing = handles.listing(index);
@@ -388,6 +388,12 @@ else
                             handles.stim_axis.String = handles.canalInfo.stimCanal(2);
                         case handles.canalInfo.stimNum{3}
                             handles.stim_axis.String = handles.canalInfo.stimCanal(3);
+                        case [{'11'} {'12'} {'13'}]'
+                            if contains(handles.filename,'_CCBP_VT')
+                                handles.stim_axis.String = {'CCBP-VT'};
+                            else
+                                handles.stim_axis.String = {'CCBP'};
+                            end
                     end
                     
                     if sinu
@@ -724,10 +730,10 @@ expLRef = size(handles.Segment);
 
 if handles.export_canal.Value
     itTimes = 3;
-directions = {'LARP','RALP','LHRH'};
+    directions = {'LARP','RALP','LHRH'};
 else
-
-    
+    itTimes = 1;
+    directions = {handles.Segment(1).stim_axis};
 end
 if isfield(handles,'ss_PathName')
     if ~isempty(handles.ss_PathName)
@@ -759,233 +765,233 @@ end
 
 for its = 1:itTimes
     if any(strcmp({handles.Segment(1:end).stim_axis},directions{its}))
-switch handles.exportCond
-    case 0
-       
-    case {1,2}
-        handles.worksheet_name.String = [directions{its},'-',handles.visit_number.String{handles.visit_number.Value},'-',handles.date.String,'-',handles.exp_type.String{handles.exp_type.Value}];
-        cd(handles.ss_PathName);
-        expRecords = load(handles.exp_spread_sheet_name.String);
-        if length(handles.worksheet_name.String)> 31
-            handles.worksheet_name.String = handles.worksheet_name.String(1:31);
-        end
-        temp = handles.worksheet_name.String;
-        temp(temp=='-') = '_';
-        temp(temp==' ') = '';
-         dirInds = strcmp({handles.Segment(1:end).stim_axis},directions{its});
-         a = struct();
-        a = {handles.Segment(dirInds).seg_filename}';
-        a(:,2) = {handles.Segment(dirInds).date}';
-        a(:,3) = {handles.Segment(dirInds).subj}';
-        a(:,4) = {handles.Segment(dirInds).implant}';
-        a(:,5) = {handles.Segment(dirInds).EyesRecorded}';
-        a(:,9) = strcat({handles.Segment(dirInds).exp_type}',{'-'},{handles.Segment(dirInds).exp_condition}',{'-'},{handles.Segment(dirInds).ecomb}');
-        a(:,10) = {handles.Segment(dirInds).stim_axis}';
-        a(:,12) = {handles.Segment(dirInds).rate}';
-        a(:,17) = {[]};
-        if any(strcmp(fieldnames(expRecords),temp))
-            segs = size(a);
-            for rs = 1:segs(1)
-                if any(strcmp([handles.experimentdata(rs,1)],expRecords.(temp).File_Name))
-                    if handles.export_replace.Value
-                   replaceInd = [find(strcmp(expRecords.(temp).File_Name,[handles.experimentdata(rs,1)]))];
-                   expRecords.(temp)(replaceInd,:)=[handles.experimentdata(rs,:)];
-                    elseif handles.export_append.Value
-                        expRecords.(temp)(end+1,:) = [a(rs,:)];
-                    end
-                  
-                else
-                    expRecords.(temp)(end+1,:) = [a(rs,:)];
-                end
-            end
-        else
-            expRecords.(temp) = [];
-            segs = size(a);
-            labels = {'File_Name' 'Date' 'Subject' 'Implant' 'Eye_Recorded' 'Compression' 'Max_PR_pps' 'Baseline_pps' 'Function' 'Mod_Canal' 'Mapping_Type' 'Frequency_Hz' 'Max_Velocity_dps' 'Phase_degrees' 'Cycles' 'Phase_Direction' 'Notes'};
-            expRecords.(temp) = cell2table([a],'VariableNames',labels);
-        end
-        save(handles.exp_spread_sheet_name.String,'-struct','expRecords');
+        switch handles.exportCond
+            case 0
 
-        writetable(expRecords.(temp),[handles.ss_FileName '.xlsx'],'Sheet',temp,'Range','A:Q','WriteVariableNames',true);
-                
-        if handles.makeVoma.Value
-         Fs = {handles.Segment(dirInds).Fs}';
-        Stimulus = {handles.Segment(dirInds).Stim_Trig}';
-        Stim_t = {handles.Segment(dirInds).Time_Stim}';
-        stim_ind = {handles.Segment(dirInds).Time_Stim}';
-        stim_ind(:) = {[]};
-        Data_LE_Pos_X = {handles.Segment(dirInds).LE_Position_X}';
-        Data_LE_Pos_Y = {handles.Segment(dirInds).LE_Position_Y}';
-        Data_LE_Pos_Z = {handles.Segment(dirInds).LE_Position_Z}';
-        Data_RE_Pos_X = {handles.Segment(dirInds).RE_Position_X}';
-        Data_RE_Pos_Y = {handles.Segment(dirInds).RE_Position_Y}';
-        Data_RE_Pos_Z = {handles.Segment(dirInds).RE_Position_Z}';
-        Data_LE_Vel_X = {handles.Segment(dirInds).LE_Velocity_X}';
-        Data_LE_Vel_Y = {handles.Segment(dirInds).LE_Velocity_Y}';
-        Data_LE_Vel_LARP = {handles.Segment(dirInds).LE_Velocity_LARP}';
-        Data_LE_Vel_RALP = {handles.Segment(dirInds).LE_Velocity_RALP}';
-        Data_LE_Vel_Z = {handles.Segment(dirInds).LE_Velocity_Z}';
-        Data_RE_Vel_X = {handles.Segment(dirInds).RE_Velocity_X}';
-        Data_RE_Vel_Y = {handles.Segment(dirInds).RE_Velocity_Y}';
-        Data_RE_Vel_LARP = {handles.Segment(dirInds).RE_Velocity_LARP}';
-        Data_RE_Vel_RALP = {handles.Segment(dirInds).RE_Velocity_RALP}';
-        Data_RE_Vel_Z = {handles.Segment(dirInds).RE_Velocity_Z}';
-        Eye_t = {handles.Segment(dirInds).Time_Eye}';
-        Filenames = strcat({handles.Segment(dirInds).seg_filename},{'.mat'})';
-        Parameters = struct();
-        Parameters.Stim_Info.Stim_Type = a(:,9);
-            Parameters.Stim_Info.ModCanal = a(:,10);
-            Parameters.Stim_Info.Freq = a(:,12);
-            Parameters.Stim_Info.Max_Vel = a(:,13);
-            Parameters.Stim_Info.Cycles = a(:,15);
-            Parameters.Stim_Info.Notes = a(:,17);
-            Parameters.Mapping.Type = a(:,11);
-            Parameters.Mapping.Compression = a(:,6);
-            Parameters.Mapping.Max_PR = a(:,7);
-            Parameters.Mapping.Baseline = a(:,8);
-            Parameters.SoftwareVer.SegSoftware = a(:,9);
-            Parameters.SoftwareVer.SegSoftware(:) = {handles.Segment(dirInds).segment_code_version}';
-            Parameters.SoftwareVer.QPRconvGUI = a(:,9);
-            Parameters.SoftwareVer.QPRconvGUI(:) = {'voma__qpr_data_convert'};
-            Parameters.DAQ = a(:,9);
-            Parameters.DAQ(:) = handles.eye_mov_system.String(handles.eye_mov_system.Value);
-            Parameters.Stim_Info.Seg_Directory = a(:,9);
-            Parameters.Stim_Info.Seg_Directory(:) = {handles.save_path_name.String};
-                   
-            Parameters.DAQ_code = a(:,9);
-            Parameters.DAQ_code(:) = {handles.Segment(dirInds).DAQ_code}';
-                            
-        Raw_Filenames = {handles.Segment(dirInds).raw_filename}';
-        [Data_QPR] = coil_seg__qpr_data_convert(Fs,Stimulus,Stim_t,stim_ind,Data_LE_Pos_X,Data_LE_Pos_Y,Data_LE_Pos_Z,Data_RE_Pos_X,Data_RE_Pos_Y,Data_RE_Pos_Z,Data_LE_Vel_X,Data_LE_Vel_Y,Data_LE_Vel_LARP,Data_LE_Vel_RALP,Data_LE_Vel_Z,Data_RE_Vel_X,Data_RE_Vel_Y,Data_RE_Vel_LARP,Data_RE_Vel_RALP,Data_RE_Vel_Z,Eye_t,Filenames,Parameters,Raw_Filenames);
-        cd(handles.params.output_data_path)
-        useName = find(dirInds);
-        defaultName = {[handles.Segment(useName(1)).date '-' handles.Segment(useName(1)).subj '-' handles.Segment(useName(1)).stim_axis '-' handles.Segment(useName(1)).exp_type]};  
-            str = inputdlg('Please enter the name of the output file (WITHOUT any suffix)','Output File', [1 50],defaultName);
-            save([str{1} '.voma'],'Data_QPR')
+            case {1,2}
+                handles.worksheet_name.String = [directions{its},'-',handles.visit_number.String{handles.visit_number.Value},'-',handles.date.String,'-',handles.exp_type.String{handles.exp_type.Value}];
+                cd(handles.ss_PathName);
+                expRecords = load(handles.exp_spread_sheet_name.String);
+                if length(handles.worksheet_name.String)> 31
+                    handles.worksheet_name.String = handles.worksheet_name.String(1:31);
+                end
+                temp = handles.worksheet_name.String;
+                temp(temp=='-') = '_';
+                temp(temp==' ') = '';
+                dirInds = strcmp({handles.Segment(1:end).stim_axis},directions{its});
+                a = struct();
+                a = {handles.Segment(dirInds).seg_filename}';
+                a(:,2) = {handles.Segment(dirInds).date}';
+                a(:,3) = {handles.Segment(dirInds).subj}';
+                a(:,4) = {handles.Segment(dirInds).implant}';
+                a(:,5) = {handles.Segment(dirInds).EyesRecorded}';
+                a(:,9) = strcat({handles.Segment(dirInds).exp_type}',{'-'},{handles.Segment(dirInds).exp_condition}',{'-'},{handles.Segment(dirInds).ecomb}');
+                a(:,10) = {handles.Segment(dirInds).stim_axis}';
+                a(:,12) = {handles.Segment(dirInds).rate}';
+                a(:,17) = {[]};
+                if any(strcmp(fieldnames(expRecords),temp))
+                    segs = size(a);
+                    for rs = 1:segs(1)
+                        if any(strcmp([handles.experimentdata(rs,1)],expRecords.(temp).File_Name))
+                            if handles.export_replace.Value
+                                replaceInd = [find(strcmp(expRecords.(temp).File_Name,[handles.experimentdata(rs,1)]))];
+                                expRecords.(temp)(replaceInd,:)=[handles.experimentdata(rs,:)];
+                            elseif handles.export_append.Value
+                                expRecords.(temp)(end+1,:) = [a(rs,:)];
+                            end
+
+                        else
+                            expRecords.(temp)(end+1,:) = [a(rs,:)];
+                        end
+                    end
+                else
+                    expRecords.(temp) = [];
+                    segs = size(a);
+                    labels = {'File_Name' 'Date' 'Subject' 'Implant' 'Eye_Recorded' 'Compression' 'Max_PR_pps' 'Baseline_pps' 'Function' 'Mod_Canal' 'Mapping_Type' 'Frequency_Hz' 'Max_Velocity_dps' 'Phase_degrees' 'Cycles' 'Phase_Direction' 'Notes'};
+                    expRecords.(temp) = cell2table([a],'VariableNames',labels);
+                end
+                save(handles.exp_spread_sheet_name.String,'-struct','expRecords');
+
+                writetable(expRecords.(temp),[handles.ss_FileName '.xlsx'],'Sheet',temp,'Range','A:Q','WriteVariableNames',true);
+
+                if handles.makeVoma.Value
+                    Fs = {handles.Segment(dirInds).Fs}';
+                    Stimulus = {handles.Segment(dirInds).Stim_Trig}';
+                    Stim_t = {handles.Segment(dirInds).Time_Stim}';
+                    stim_ind = {handles.Segment(dirInds).Time_Stim}';
+                    stim_ind(:) = {[]};
+                    Data_LE_Pos_X = {handles.Segment(dirInds).LE_Position_X}';
+                    Data_LE_Pos_Y = {handles.Segment(dirInds).LE_Position_Y}';
+                    Data_LE_Pos_Z = {handles.Segment(dirInds).LE_Position_Z}';
+                    Data_RE_Pos_X = {handles.Segment(dirInds).RE_Position_X}';
+                    Data_RE_Pos_Y = {handles.Segment(dirInds).RE_Position_Y}';
+                    Data_RE_Pos_Z = {handles.Segment(dirInds).RE_Position_Z}';
+                    Data_LE_Vel_X = {handles.Segment(dirInds).LE_Velocity_X}';
+                    Data_LE_Vel_Y = {handles.Segment(dirInds).LE_Velocity_Y}';
+                    Data_LE_Vel_LARP = {handles.Segment(dirInds).LE_Velocity_LARP}';
+                    Data_LE_Vel_RALP = {handles.Segment(dirInds).LE_Velocity_RALP}';
+                    Data_LE_Vel_Z = {handles.Segment(dirInds).LE_Velocity_Z}';
+                    Data_RE_Vel_X = {handles.Segment(dirInds).RE_Velocity_X}';
+                    Data_RE_Vel_Y = {handles.Segment(dirInds).RE_Velocity_Y}';
+                    Data_RE_Vel_LARP = {handles.Segment(dirInds).RE_Velocity_LARP}';
+                    Data_RE_Vel_RALP = {handles.Segment(dirInds).RE_Velocity_RALP}';
+                    Data_RE_Vel_Z = {handles.Segment(dirInds).RE_Velocity_Z}';
+                    Eye_t = {handles.Segment(dirInds).Time_Eye}';
+                    Filenames = strcat({handles.Segment(dirInds).seg_filename},{'.mat'})';
+                    Parameters = struct();
+                    Parameters.Stim_Info.Stim_Type = a(:,9);
+                    Parameters.Stim_Info.ModCanal = a(:,10);
+                    Parameters.Stim_Info.Freq = a(:,12);
+                    Parameters.Stim_Info.Max_Vel = a(:,13);
+                    Parameters.Stim_Info.Cycles = a(:,15);
+                    Parameters.Stim_Info.Notes = a(:,17);
+                    Parameters.Mapping.Type = a(:,11);
+                    Parameters.Mapping.Compression = a(:,6);
+                    Parameters.Mapping.Max_PR = a(:,7);
+                    Parameters.Mapping.Baseline = a(:,8);
+                    Parameters.SoftwareVer.SegSoftware = a(:,9);
+                    Parameters.SoftwareVer.SegSoftware(:) = {handles.Segment(dirInds).segment_code_version}';
+                    Parameters.SoftwareVer.QPRconvGUI = a(:,9);
+                    Parameters.SoftwareVer.QPRconvGUI(:) = {'voma__qpr_data_convert'};
+                    Parameters.DAQ = a(:,9);
+                    Parameters.DAQ(:) = handles.eye_mov_system.String(handles.eye_mov_system.Value);
+                    Parameters.Stim_Info.Seg_Directory = a(:,9);
+                    Parameters.Stim_Info.Seg_Directory(:) = {handles.save_path_name.String};
+
+                    Parameters.DAQ_code = a(:,9);
+                    Parameters.DAQ_code(:) = {handles.Segment(dirInds).DAQ_code}';
+
+                    Raw_Filenames = {handles.Segment(dirInds).raw_filename}';
+                    [Data_QPR] = coil_seg__qpr_data_convert(Fs,Stimulus,Stim_t,stim_ind,Data_LE_Pos_X,Data_LE_Pos_Y,Data_LE_Pos_Z,Data_RE_Pos_X,Data_RE_Pos_Y,Data_RE_Pos_Z,Data_LE_Vel_X,Data_LE_Vel_Y,Data_LE_Vel_LARP,Data_LE_Vel_RALP,Data_LE_Vel_Z,Data_RE_Vel_X,Data_RE_Vel_Y,Data_RE_Vel_LARP,Data_RE_Vel_RALP,Data_RE_Vel_Z,Eye_t,Filenames,Parameters,Raw_Filenames);
+                    cd(handles.params.output_data_path)
+                    useName = find(dirInds);
+                    defaultName = {[handles.Segment(useName(1)).date '-' handles.Segment(useName(1)).subj '-' handles.Segment(useName(1)).stim_axis '-' handles.Segment(useName(1)).exp_type]};
+                    str = inputdlg('Please enter the name of the output file (WITHOUT any suffix)','Output File', [1 50],defaultName);
+                    save([str{1} '.voma'],'Data_QPR')
+                end
+
+                handles.whereToStartExp = expLRef(1)+1;
+                handles.timesExported = handles.timesExported+1;
+                handles.exportedInds = find(dirInds);
+                guidata(hObject,handles)
+            case 3
+                handles.ss_FileName = [handles.subj_id.String{handles.subj_id.Value} '_ExperimentRecords'];
+                set(handles.exp_spread_sheet_name,'String',[handles.ss_FileName '.mat']);
+                handles.worksheet_name.String = [directions{its},'-',handles.visit_number.String{handles.visit_number.Value},'-',handles.date.String,'-',handles.exp_type.String{handles.exp_type.Value}];
+                prompt = {'Enter the desired file name without extensions'};
+                title = 'File Name';
+                dims = [1 35];
+                definput = {[handles.Segment(1).date '-' handles.subj_id.String{handles.subj_id.Value} '_ExperimentRecords']};
+                handles.ss_FileName = inputdlg(prompt,title,dims,definput);
+                handles.ss_FileName = handles.ss_FileName{1};
+                handles.exp_spread_sheet_name.String = handles.ss_FileName;
+                handles.ss_PathName = uigetdir(cd,'Choose directory where experiment spreadsheet file will be saved');
+                handles.exp_ss_savepath.String = handles.ss_PathName;
+                set(handles.exp_spread_sheet_name,'String',[handles.ss_FileName '.mat']);
+                cd(handles.ss_PathName);
+                labels = {'File_Name' 'Date' 'Subject' 'Implant' 'Eye_Recorded' 'Compression' 'Max_PR_pps' 'Baseline_pps' 'Function' 'Mod_Canal' 'Mapping_Type' 'Frequency_Hz' 'Max_Velocity_dps' 'Phase_degrees' 'Cycles' 'Phase_Direction' 'Notes'};
+                if length(handles.worksheet_name.String)> 31
+                    handles.worksheet_name.String = handles.worksheet_name.String(1:31);
+                end
+
+                dirInds = strcmp({handles.Segment(1:end).stim_axis},directions{its});
+                a = struct();
+                a = {handles.Segment(dirInds).seg_filename}';
+                a(:,2) = {handles.Segment(dirInds).date}';
+                a(:,3) = {handles.Segment(dirInds).subj}';
+                a(:,4) = {handles.Segment(dirInds).implant}';
+                a(:,5) = {handles.Segment(dirInds).EyesRecorded}';
+                a(:,9) = strcat({handles.Segment(dirInds).exp_type}',{'-'},{handles.Segment(dirInds).exp_condition}',{'-'},{handles.Segment(dirInds).ecomb}');
+                a(:,10) = {handles.Segment(dirInds).stim_axis}';
+                a(:,12) = {handles.Segment(dirInds).rate}';
+                a(:,17) = {[]};
+                %     handles.experimentdata{segments,1} = [handles.seg_filename.String handles.string_addon];
+                %     handles.experimentdata{segments,2} = [handles.date.String(5:6),'/',handles.date.String(7:8),'/',handles.date.String(1:4)];
+                %     handles.experimentdata{segments,3} = handles.subj_id.String{handles.subj_id.Value};
+                %     handles.experimentdata{segments,4} = handles.implant.String{handles.implant.Value};
+                %     handles.experimentdata{segments,5} = handles.eye_rec.String{handles.eye_rec.Value};
+                %     handles.experimentdata{segments,9} = [handles.exp_type.String{handles.exp_type.Value},'-',handles.exp_condition.String{handles.exp_condition.Value},'-',handles.exp_ecomb.String{handles.exp_ecomb.Value}];
+                %     handles.experimentdata{segments,10} = handles.stim_axis.String{handles.stim_axis.Value};
+                %     handles.experimentdata{segments,12} = str2double(handles.stim_frequency.String{handles.stim_frequency.Value});
+                %     handles.experimentdata{segments,13} = [];
+                %     handles.experimentdata{segments,14} = [];
+                %     handles.experimentdata{segments,15} = [];
+                %     handles.experimentdata{segments,16} = [];
+                %     handles.experimentdata{segments,17} = [];
+                temp = handles.worksheet_name.String;
+                temp(temp=='-') = '_';
+                temp(temp==' ') = '';
+                var = genvarname(temp);
+                t = cell2table([a],'VariableNames',labels);
+                s = struct(var,t);
+                save(handles.exp_spread_sheet_name.String,'-struct','s');
+                writetable(t,[handles.ss_FileName '.xlsx'],'Sheet',temp,'Range','A:Q','WriteVariableNames',true)
+
+                if handles.makeVoma.Value
+                    Fs = {handles.Segment(dirInds).Fs}';
+                    Stimulus = {handles.Segment(dirInds).Stim_Trig}';
+                    Stim_t = {handles.Segment(dirInds).Time_Stim}';
+                    stim_ind = {handles.Segment(dirInds).Time_Stim}';
+                    stim_ind(:) = {[]};
+                    Data_LE_Pos_X = {handles.Segment(dirInds).LE_Position_X}';
+                    Data_LE_Pos_Y = {handles.Segment(dirInds).LE_Position_Y}';
+                    Data_LE_Pos_Z = {handles.Segment(dirInds).LE_Position_Z}';
+                    Data_RE_Pos_X = {handles.Segment(dirInds).RE_Position_X}';
+                    Data_RE_Pos_Y = {handles.Segment(dirInds).RE_Position_Y}';
+                    Data_RE_Pos_Z = {handles.Segment(dirInds).RE_Position_Z}';
+                    Data_LE_Vel_X = {handles.Segment(dirInds).LE_Velocity_X}';
+                    Data_LE_Vel_Y = {handles.Segment(dirInds).LE_Velocity_Y}';
+                    Data_LE_Vel_LARP = {handles.Segment(dirInds).LE_Velocity_LARP}';
+                    Data_LE_Vel_RALP = {handles.Segment(dirInds).LE_Velocity_RALP}';
+                    Data_LE_Vel_Z = {handles.Segment(dirInds).LE_Velocity_Z}';
+                    Data_RE_Vel_X = {handles.Segment(dirInds).RE_Velocity_X}';
+                    Data_RE_Vel_Y = {handles.Segment(dirInds).RE_Velocity_Y}';
+                    Data_RE_Vel_LARP = {handles.Segment(dirInds).RE_Velocity_LARP}';
+                    Data_RE_Vel_RALP = {handles.Segment(dirInds).RE_Velocity_RALP}';
+                    Data_RE_Vel_Z = {handles.Segment(dirInds).RE_Velocity_Z}';
+                    Eye_t = {handles.Segment(dirInds).Time_Eye}';
+                    Filenames = strcat({handles.Segment(dirInds).seg_filename},{'.mat'})';
+                    Parameters = struct();
+                    Parameters.Stim_Info.Stim_Type = a(:,9);
+                    Parameters.Stim_Info.ModCanal = a(:,10);
+                    Parameters.Stim_Info.Freq = a(:,12);
+                    Parameters.Stim_Info.Max_Vel = a(:,13);
+                    Parameters.Stim_Info.Cycles = a(:,15);
+                    Parameters.Stim_Info.Notes = a(:,17);
+                    Parameters.Mapping.Type = a(:,11);
+                    Parameters.Mapping.Compression = a(:,6);
+                    Parameters.Mapping.Max_PR = a(:,7);
+                    Parameters.Mapping.Baseline = a(:,8);
+                    Parameters.SoftwareVer.SegSoftware = a(:,9);
+                    Parameters.SoftwareVer.SegSoftware(:) = {handles.Segment(dirInds).segment_code_version}';
+                    Parameters.SoftwareVer.QPRconvGUI = a(:,9);
+                    Parameters.SoftwareVer.QPRconvGUI(:) = {'voma__qpr_data_convert'};
+                    Parameters.DAQ = a(:,9);
+                    Parameters.DAQ(:) = handles.eye_mov_system.String(handles.eye_mov_system.Value);
+                    Parameters.Stim_Info.Seg_Directory = a(:,9);
+                    Parameters.Stim_Info.Seg_Directory(:) = {handles.save_path_name.String};
+
+                    Parameters.DAQ_code = a(:,9);
+                    Parameters.DAQ_code(:) = {handles.Segment(dirInds).DAQ_code}';
+
+                    Raw_Filenames = {handles.Segment(dirInds).raw_filename}';
+                    [Data_QPR] = coil_seg__qpr_data_convert(Fs,Stimulus,Stim_t,stim_ind,Data_LE_Pos_X,Data_LE_Pos_Y,Data_LE_Pos_Z,Data_RE_Pos_X,Data_RE_Pos_Y,Data_RE_Pos_Z,Data_LE_Vel_X,Data_LE_Vel_Y,Data_LE_Vel_LARP,Data_LE_Vel_RALP,Data_LE_Vel_Z,Data_RE_Vel_X,Data_RE_Vel_Y,Data_RE_Vel_LARP,Data_RE_Vel_RALP,Data_RE_Vel_Z,Eye_t,Filenames,Parameters,Raw_Filenames);
+                    handles.params.output_data_path = uigetdir(cd,'Choose directory where VOMA files will be saved');
+                    cd(handles.params.output_data_path)
+                    useName = find(dirInds);
+                    defaultName = {[handles.Segment(useName(1)).date '-' handles.Segment(useName(1)).subj '-' handles.Segment(useName(1)).stim_axis '-' handles.Segment(useName(1)).exp_type]};
+                    str = inputdlg('Please enter the name of the output file (WITHOUT any suffix)','Output File', [1 50],defaultName);
+                    save([str{1} '.voma'],'Data_QPR')
+                end
+                handles.whereToStartExp = expLRef(1)+1;
+                handles.timesExported = handles.timesExported+1;
+                handles.exportedInds = find(dirInds);
+                handles.exportCond = 2;
+                guidata(hObject,handles)
+
         end
-        
-        handles.whereToStartExp = expLRef(1)+1;
-        handles.timesExported = handles.timesExported+1;
-        handles.exportedInds = find(dirInds);
-        guidata(hObject,handles)
-    case 3
-        handles.ss_FileName = [handles.subj_id.String{handles.subj_id.Value} '_ExperimentRecords'];
-        set(handles.exp_spread_sheet_name,'String',[handles.ss_FileName '.mat']);
-        handles.worksheet_name.String = [directions{its},'-',handles.visit_number.String{handles.visit_number.Value},'-',handles.date.String,'-',handles.exp_type.String{handles.exp_type.Value}];
-        prompt = {'Enter the desired file name without extensions'};
-        title = 'File Name';
-        dims = [1 35];
-        definput = {[handles.Segment(1).date '-' handles.subj_id.String{handles.subj_id.Value} '_ExperimentRecords']};
-        handles.ss_FileName = inputdlg(prompt,title,dims,definput);
-        handles.ss_FileName = handles.ss_FileName{1};
-        handles.exp_spread_sheet_name.String = handles.ss_FileName;
-        handles.ss_PathName = uigetdir(cd,'Choose directory where experiment spreadsheet file will be saved');
-        handles.exp_ss_savepath.String = handles.ss_PathName;
-        set(handles.exp_spread_sheet_name,'String',[handles.ss_FileName '.mat']);
-        cd(handles.ss_PathName);
-        labels = {'File_Name' 'Date' 'Subject' 'Implant' 'Eye_Recorded' 'Compression' 'Max_PR_pps' 'Baseline_pps' 'Function' 'Mod_Canal' 'Mapping_Type' 'Frequency_Hz' 'Max_Velocity_dps' 'Phase_degrees' 'Cycles' 'Phase_Direction' 'Notes'};
-        if length(handles.worksheet_name.String)> 31
-            handles.worksheet_name.String = handles.worksheet_name.String(1:31);
-        end
-        
-        dirInds = strcmp({handles.Segment(1:end).stim_axis},directions{its});
-        a = struct();
-        a = {handles.Segment(dirInds).seg_filename}';
-        a(:,2) = {handles.Segment(dirInds).date}';
-        a(:,3) = {handles.Segment(dirInds).subj}';
-        a(:,4) = {handles.Segment(dirInds).implant}';
-        a(:,5) = {handles.Segment(dirInds).EyesRecorded}';
-        a(:,9) = strcat({handles.Segment(dirInds).exp_type}',{'-'},{handles.Segment(dirInds).exp_condition}',{'-'},{handles.Segment(dirInds).ecomb}');
-        a(:,10) = {handles.Segment(dirInds).stim_axis}';
-        a(:,12) = {handles.Segment(dirInds).rate}';
-        a(:,17) = {[]};
-        %     handles.experimentdata{segments,1} = [handles.seg_filename.String handles.string_addon];
-%     handles.experimentdata{segments,2} = [handles.date.String(5:6),'/',handles.date.String(7:8),'/',handles.date.String(1:4)];
-%     handles.experimentdata{segments,3} = handles.subj_id.String{handles.subj_id.Value};
-%     handles.experimentdata{segments,4} = handles.implant.String{handles.implant.Value};
-%     handles.experimentdata{segments,5} = handles.eye_rec.String{handles.eye_rec.Value};
-%     handles.experimentdata{segments,9} = [handles.exp_type.String{handles.exp_type.Value},'-',handles.exp_condition.String{handles.exp_condition.Value},'-',handles.exp_ecomb.String{handles.exp_ecomb.Value}];
-%     handles.experimentdata{segments,10} = handles.stim_axis.String{handles.stim_axis.Value};
-%     handles.experimentdata{segments,12} = str2double(handles.stim_frequency.String{handles.stim_frequency.Value});
-%     handles.experimentdata{segments,13} = [];
-%     handles.experimentdata{segments,14} = [];
-%     handles.experimentdata{segments,15} = [];
-%     handles.experimentdata{segments,16} = [];
-%     handles.experimentdata{segments,17} = [];
-        temp = handles.worksheet_name.String;
-        temp(temp=='-') = '_';
-        temp(temp==' ') = '';
-        var = genvarname(temp);
-        t = cell2table([a],'VariableNames',labels);
-        s = struct(var,t);
-        save(handles.exp_spread_sheet_name.String,'-struct','s');
-        writetable(t,[handles.ss_FileName '.xlsx'],'Sheet',temp,'Range','A:Q','WriteVariableNames',true)
-        
-        if handles.makeVoma.Value
-        Fs = {handles.Segment(dirInds).Fs}';
-        Stimulus = {handles.Segment(dirInds).Stim_Trig}';
-        Stim_t = {handles.Segment(dirInds).Time_Stim}';
-        stim_ind = {handles.Segment(dirInds).Time_Stim}';
-        stim_ind(:) = {[]};
-        Data_LE_Pos_X = {handles.Segment(dirInds).LE_Position_X}';
-        Data_LE_Pos_Y = {handles.Segment(dirInds).LE_Position_Y}';
-        Data_LE_Pos_Z = {handles.Segment(dirInds).LE_Position_Z}';
-        Data_RE_Pos_X = {handles.Segment(dirInds).RE_Position_X}';
-        Data_RE_Pos_Y = {handles.Segment(dirInds).RE_Position_Y}';
-        Data_RE_Pos_Z = {handles.Segment(dirInds).RE_Position_Z}';
-        Data_LE_Vel_X = {handles.Segment(dirInds).LE_Velocity_X}';
-        Data_LE_Vel_Y = {handles.Segment(dirInds).LE_Velocity_Y}';
-        Data_LE_Vel_LARP = {handles.Segment(dirInds).LE_Velocity_LARP}';
-        Data_LE_Vel_RALP = {handles.Segment(dirInds).LE_Velocity_RALP}';
-        Data_LE_Vel_Z = {handles.Segment(dirInds).LE_Velocity_Z}';
-        Data_RE_Vel_X = {handles.Segment(dirInds).RE_Velocity_X}';
-        Data_RE_Vel_Y = {handles.Segment(dirInds).RE_Velocity_Y}';
-        Data_RE_Vel_LARP = {handles.Segment(dirInds).RE_Velocity_LARP}';
-        Data_RE_Vel_RALP = {handles.Segment(dirInds).RE_Velocity_RALP}';
-        Data_RE_Vel_Z = {handles.Segment(dirInds).RE_Velocity_Z}';
-        Eye_t = {handles.Segment(dirInds).Time_Eye}';
-        Filenames = strcat({handles.Segment(dirInds).seg_filename},{'.mat'})';
-        Parameters = struct();
-        Parameters.Stim_Info.Stim_Type = a(:,9);
-            Parameters.Stim_Info.ModCanal = a(:,10);
-            Parameters.Stim_Info.Freq = a(:,12);
-            Parameters.Stim_Info.Max_Vel = a(:,13);
-            Parameters.Stim_Info.Cycles = a(:,15);
-            Parameters.Stim_Info.Notes = a(:,17);
-            Parameters.Mapping.Type = a(:,11);
-            Parameters.Mapping.Compression = a(:,6);
-            Parameters.Mapping.Max_PR = a(:,7);
-            Parameters.Mapping.Baseline = a(:,8);
-            Parameters.SoftwareVer.SegSoftware = a(:,9);
-            Parameters.SoftwareVer.SegSoftware(:) = {handles.Segment(dirInds).segment_code_version}';
-            Parameters.SoftwareVer.QPRconvGUI = a(:,9);
-            Parameters.SoftwareVer.QPRconvGUI(:) = {'voma__qpr_data_convert'};
-            Parameters.DAQ = a(:,9);
-            Parameters.DAQ(:) = handles.eye_mov_system.String(handles.eye_mov_system.Value);
-            Parameters.Stim_Info.Seg_Directory = a(:,9);
-            Parameters.Stim_Info.Seg_Directory(:) = {handles.save_path_name.String};
-                   
-            Parameters.DAQ_code = a(:,9);
-            Parameters.DAQ_code(:) = {handles.Segment(dirInds).DAQ_code}';
-                            
-        Raw_Filenames = {handles.Segment(dirInds).raw_filename}';
-        [Data_QPR] = coil_seg__qpr_data_convert(Fs,Stimulus,Stim_t,stim_ind,Data_LE_Pos_X,Data_LE_Pos_Y,Data_LE_Pos_Z,Data_RE_Pos_X,Data_RE_Pos_Y,Data_RE_Pos_Z,Data_LE_Vel_X,Data_LE_Vel_Y,Data_LE_Vel_LARP,Data_LE_Vel_RALP,Data_LE_Vel_Z,Data_RE_Vel_X,Data_RE_Vel_Y,Data_RE_Vel_LARP,Data_RE_Vel_RALP,Data_RE_Vel_Z,Eye_t,Filenames,Parameters,Raw_Filenames);
-        handles.params.output_data_path = uigetdir(cd,'Choose directory where VOMA files will be saved');
-        cd(handles.params.output_data_path)
-        useName = find(dirInds);
-        defaultName = {[handles.Segment(useName(1)).date '-' handles.Segment(useName(1)).subj '-' handles.Segment(useName(1)).stim_axis '-' handles.Segment(useName(1)).exp_type]};  
-            str = inputdlg('Please enter the name of the output file (WITHOUT any suffix)','Output File', [1 50],defaultName);
-            save([str{1} '.voma'],'Data_QPR')
-        end
-        handles.whereToStartExp = expLRef(1)+1;
-        handles.timesExported = handles.timesExported+1;
-        handles.exportedInds = find(dirInds);
-        handles.exportCond = 2;
-        guidata(hObject,handles)
-        
-end
     end
-handles.prevExportSize = expLRef(1);
+    handles.prevExportSize = expLRef(1);
 end
         handles.export_data.BackgroundColor = [0    1    0];
         pause(1);

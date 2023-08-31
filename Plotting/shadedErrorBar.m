@@ -143,9 +143,11 @@ function H = makePlot(x,y,errBar,lineProps,transparent,patchSaturation,parent)
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Plot to get the parameters of the line
+    H = struct();
     if isempty(parent)
         H.mainLine=plot(x,y,lineProps{:});
     else
+        hold(parent,'on')
         H.mainLine=plot(parent,x,y,lineProps{:});
     end
 
@@ -209,6 +211,7 @@ function H = makePlot(x,y,errBar,lineProps,transparent,patchSaturation,parent)
     else
         H.edge(1)=plot(parent,x,lE,'-','color',edgeColor);
         H.edge(2)=plot(parent,x,uE,'-','color',edgeColor);
+        hold(parent,'off')
     end
 
 

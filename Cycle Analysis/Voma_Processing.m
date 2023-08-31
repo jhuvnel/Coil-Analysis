@@ -404,6 +404,18 @@ elseif contains(handles.vomaFile,'LHRH')
     elseif contains(handles.vomaFile,'Opal')
         handles.rotSign  = -1;
     end
+elseif contains(handles.vomaFile,'CCBP')
+    handles.pureRot = [0 0 1];
+    handles.stimCanal = 3;
+    if contains(handles.vomaFile,'Nancy')
+        handles.rotSign  = -1;
+    elseif contains(handles.vomaFile,'Yoda')
+        handles.rotSign  = 1;
+    elseif contains(handles.vomaFile,'GiGi')
+        handles.rotSign  = -1;
+    elseif contains(handles.vomaFile,'Opal')
+        handles.rotSign  = -1;
+    end
 end
 guidata(hObject, handles);
 end
@@ -1396,7 +1408,8 @@ handles.segment.filtFlag = 1;
 % end
 
 
-warning('on','verbose')
+% warning('on','verbose')
+warning off signal:filtfilt:ParseB
 handles.segment.LE_LARP_Filt = filtfilt(ones(1,handles.tofilt)/handles.tofilt,1,handles.segment.LE_LARP);
 handles.segment.LE_Z_Filt = filtfilt(ones(1,handles.tofilt)/handles.tofilt,1,handles.segment.LE_Z);
 handles.segment.LE_RALP_Filt = filtfilt(ones(1,handles.tofilt)/handles.tofilt,1,handles.segment.LE_RALP);
@@ -2226,6 +2239,7 @@ if handles.RegVChange
     end
     handles.cycavg.YLim = [lower-40 upper+40];
     handles.cycavg.XLim = [0 .12];
+    hold(handles.cycavg,'on')
     plot([0.1 0.1],[lower-40 upper+40],'Color','k','LineWidt',2.5)
     plot([0.03 0.03],[lower-40 upper+40],'Color','r','LineStyle','--','LineWidt',2.5)
     hold(handles.cycavg,'off')
@@ -2390,6 +2404,7 @@ if handles.NystagVChange
     end
     handles.cycavg_Nystag.YLim = [lower-40 upper+40];
     handles.cycavg_Nystag.XLim = [0 .12];
+    hold(handles.cycavg_Nystag,'on')
     plot([0.1 0.1],[lower-40 upper+40],'Color','k','LineWidt',2.5)
     plot([0.03 0.03],[lower-40 upper+40],'Color','r','LineStyle','--','LineWidt',2.5)
     hold(handles.cycavg_Nystag,'off')
