@@ -808,6 +808,8 @@ if ~isfield(handles.params,'TOUSE') || ~keepCycParam
                         handles.params(j).TOUSE = 1;
                     end
                 end
+            elseif (i==1) && (j==1)
+                handles.params(j).TOUSE = 1;
             end
         end
     end
@@ -841,8 +843,8 @@ tph = [];
 handles.LARPCombs = [];
 handles.RALPCombs = [];
 handles.LHRHCombs = [];
-
-for o = 1:length(temp)
+sz = size(temp);
+for o = 1:sz(1)
     handles.allCombs(o,1:2) = temp{o,2};
     toPlace = [num2str(temp{o,2}(1)),'-',num2str(temp{o,2}(2))];
     if appFlg
