@@ -131,7 +131,7 @@ if ~initialHoldStatus, hold on,  end
 
 H = makePlot(x,y,errBar,lineProps,transparent,patchSaturation,parent);
 
-if ~initialHoldStatus, hold off, end
+% if ~initialHoldStatus, hold off, end
 
 if nargout==1
     varargout{1}=H;
@@ -211,7 +211,7 @@ function H = makePlot(x,y,errBar,lineProps,transparent,patchSaturation,parent)
     else
         H.edge(1)=plot(parent,x,lE,'-','color',edgeColor);
         H.edge(2)=plot(parent,x,uE,'-','color',edgeColor);
-        hold(parent,'off')
+        % hold(parent,'off')
     end
 
 
